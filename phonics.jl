@@ -12,11 +12,12 @@ function table_lookup(chr, table)
 end
 
 " Replace all the 'find' patterns with the corresponding 'replace' strings. "
-function replace_all(str, find, replace)
+function replace_all(str, find, repl)
   nstr = str
-  for pos in 1:length(str)
-    nstr = replace(nstr, find[pos], replace[pos])
+  for pos in 1:length(find)
+    nstr = replace(nstr, find[pos], repl[pos])
   end
+  return nstr
 end
 
   
@@ -74,24 +75,53 @@ function soundex(str)
 end
 
 
+"""
+  phonex(str)
+  
+  Transforms a string into its Phonex code.
 
+  Lait & Randell's Phonex encoding scheme can be viewed as an improved version
+  of Soundex. Like Soundex, it produces a 1-letter 3-number code, but a range
+  of modifications make it more resiliant to encoding errors involving the first
+  character of a word, as well as other issues caused by interactions between
+  characters within the rest of the word. """
 function phonex(str)
 
-  lstr = lowercase(str)
+  lstr = prep(str)
   
   # remove trailing s
   if lstr[end] == 's'
     lstr = lstr[1:end-1]
   end
   
-  phonex_pre_find = [r"^kn", r"^ph", r"^wr", r"^h", r"^[aeiouy]", r"^p", r"^v", r"^[kq]", r"^j", r"^z"]
+  #Remove duplicates
+  lstr = squash(lstr)
+
+  #Find/replace leading patterns
+  phonex_pre_find = [r"^kn", r"^ph", r"^wr", r"^h", r"^[eiouy]", r"^p", r"^v", r"^[kq]", r"^j", r"^z"]
   phonex_pre_repl = ['n', 'f', 'r', "", 'a', 'b', 'f', 'c', 'g','s']
   lstr = replace_all(lstr, phonex_pre_find, phonex_pre_repl)
   
-  #actually the phonix table
-  phonex_table = ["aehiouwy", "bp", "cgjkq", "dt", "l", "mn", "r", "fv", "sxz"]
+  #Preparatory find/replace for main coding.
+  phonex_main_find = [r"[dt]c",r"[lr]([^aeiou$])",r"([mn])g",r"a|e|h|i|o|u|w|y",r"a+"]
+  phonex_main_repl = ['c',s"\1", s"\1",'a',""]
+  body = replace_all(lstr[2:end], phonex_main_find, phonex_main_repl)
+
+  #look up phonex coding for 2:end
+  phonex_table = ["","bfpv", "cgjkqsxz", "dt", "l", "mn", "r"]
+  body = map(x -> table_lookup(x, phonex_table), body)
+
+  #Pad with 0's
+  body = body * "000"
+  
+  #Join first letter with trimmed body.
+  return join([string(lstr[1]), body[1:3]])
 end
   
+
+function phonix(str)
+  phonix_table = ["aehiouwy", "bp", "cgjkq", "dt", "l", "mn", "r", "fv", "sxz"]
+end
 
 """
   metaphone(str, len=4)
@@ -157,6 +187,6 @@ function metaphone(str,len=4)
 end
   
 
-export soundex, squash, metaphone
+export soundex, metaphone, phonex
 
 end

@@ -4,6 +4,7 @@ This library implements some widely-used phonetic coding schemes, including:
 
 + Soundex
 + Metaphone
++ Phonex
 
 ### Phonetics 
 

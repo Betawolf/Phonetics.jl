@@ -9,7 +9,7 @@ function assert(v1, v2)
 end
 
 #Tests for correctness of Soundex
-println("Soundex")
+println("\nSoundex")
 assert(soundex("Euler"),"e460")
 assert(soundex("Ellery"),"e460")
 assert(soundex("Gauss"),"g200")
@@ -24,7 +24,7 @@ assert(soundex("Christina"), "c623")
 assert(soundex("Kristina"), "k623")
 
 #Tests for correctness of Metaphone
-println("Metaphone")
+println("\nMetaphone")
 assert(metaphone("School"), "skl")
 assert(metaphone("Shubert"), "xbrt")
 assert(metaphone("Bonner"), "bnr")
@@ -37,4 +37,17 @@ assert(metaphone("pressed"), "prst")
 #NB: reference seemed confused about these two examples. 
 assert(metaphone("Van Hoesen"), "fnhs")
 assert(metaphone("Vincenzo"), "fnsn")
+
+println("\nPhonex")
+assert(phonex("Peter"), "b360")
+assert(phonex("Pete"), "b300")
+assert(phonex("Pedro"), "b360")
+assert(phonex("Stephen"), "s315")
+assert(phonex("Steve"), "s310")
+assert(phonex("Smythe"), "s530")
+assert(phonex("Smith"), "s530")
+assert(phonex("Gail"), "g400")
+assert(phonex("Gayle"), "g400")
+assert(phonex("Christina"), "c623")
+assert(phonex("Kristina"), "c623")
 
