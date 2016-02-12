@@ -2,17 +2,29 @@ module phonics
 
 " Looks up character against Soundex classes, returns integer code as Char, or
   else ' ' if character was not found. "
-function soundex_table(chr)
-  table = ["aehiouwy", "bfpv", "cgjkqsxz", "dt", "l", "mn", "r"]
+function table_lookup(chr, table)
   for pos in 1:length(table)
     if chr in table[pos]
         return Char('0'+(pos-1))
     end
   end
-  return ' '
+  return chr
 end
 
-" 'Squashes' a string by reducing any repeated characters to only one instance. "
+" Replace all the 'find' patterns with the corresponding 'replace' strings. "
+function replace_all(str, find, replace)
+  nstr = str
+  for pos in 1:length(str)
+    nstr = replace(nstr, find[pos], replace[pos])
+  end
+end
+
+  
+
+"""
+  squash(str)
+
+ 'Squashes' a string by reducing any repeated characters to only one instance. """
 function squash(str)
   nstr = ""
   lc = 0
@@ -25,21 +37,34 @@ function squash(str)
   return nstr
 end
  
+" Lowercase and strip non-alpha chars from a word. "
+function prep(str)
+  return replace(lowercase(str), r"[^a-z]", "")
+end
+
+
 """
   soundex(str)
 
-  Transforms a string into its Soundex code. """
+  Transforms a string into its Soundex code.
+
+  The Russell Soundex code is designed primarily for use with English names and has some
+  known drawbacks, including a sensitivity to the first letter of a name (Christina is c623
+  and similar Kristina is k623) and loss of some audible differences (Kant and Knuth, k530).
+ """
 function soundex(str)
-  lstr = lowercase(str)
+  lstr = prep(str)
+
+  #Squash repetitions.
+  lstr = squash(lstr)
+
+  soundex_table = ["aehiouwy", "bfpv", "cgjkqsxz", "dt", "l", "mn", "r"]
 
   #Look up soundex coding for 2:end
-  body = map(soundex_table, lstr[2:end])
+  body = map(x -> table_lookup(x, soundex_table), lstr[2:end])
   
   #Remove 0's 
   body = join(split(body, '0')) 
-
-  #Squash repetitions.
-  body = squash(body)
 
   #Pad with 0's
   body = body * "000"
@@ -48,6 +73,90 @@ function soundex(str)
   return join([string(lstr[1]), body[1:3]])
 end
 
-export soundex, squash
+
+
+function phonex(str)
+
+  lstr = lowercase(str)
+  
+  # remove trailing s
+  if lstr[end] == 's'
+    lstr = lstr[1:end-1]
+  end
+  
+  phonex_pre_find = [r"^kn", r"^ph", r"^wr", r"^h", r"^[aeiouy]", r"^p", r"^v", r"^[kq]", r"^j", r"^z"]
+  phonex_pre_repl = ['n', 'f', 'r', "", 'a', 'b', 'f', 'c', 'g','s']
+  lstr = replace_all(lstr, phonex_pre_find, phonex_pre_repl)
+  
+  #actually the phonix table
+  phonex_table = ["aehiouwy", "bp", "cgjkq", "dt", "l", "mn", "r", "fv", "sxz"]
+end
+  
+
+"""
+  metaphone(str, len=4)
+
+  Transforms a word into its Metaphone reresentation.
+
+  Lawrence Phillips' Metaphone technique is applicable to a range of sound-alike
+  words. It produces a code which uses a sixteen-character alphabet, with 'x' for
+  'sh' sounds and 'ø' for 'th' sounds, and no vowels apart from where they are the
+  first letter. In some cases, such as the word 'persuade', its representation may 
+  be unintuitive regarding pronunciation. 
+
+  For comparison purposes, 4 characters are usually used, but you may vary the 
+  returned length if you wish for a longer representation. 
+"""
+function metaphone(str,len=4)
+  lstr = prep(str)
+  
+  lstr = replace(lstr, "^x", "s")
+  lstr = replace(lstr, "x", "ks")
+
+  lstr = replace(lstr, "mb", "m")
+
+  lstr = replace(lstr, "sch", "sk")
+
+  lstr = replace(lstr, r"t?ch|sh", 'x')
+
+  lstr = replace(lstr, r"cia|[st]i[ao]", "xa")
+  
+  lstr = replace(lstr, r"s?c([eiy])(.+)", s"s\1\2")
+
+  lstr = replace(lstr, r"(.+)dg([eiy])", s"\1j\2")
+
+  lstr = replace(lstr, "d", 't')
+  
+  lstr = replace(lstr, r"gh([^aeiou$])", s"h\1")
+
+  lstr = replace(lstr, r"gn$", "n")
+  lstr = replace(lstr, r"gned$", "ned")
+
+  lstr = replace(lstr, r"c|g|q", "k")
+
+  lstr = replace(lstr, r"ph|v", "f")
+
+  lstr = replace(lstr, "th", "ø")
+  
+  lstr = replace(lstr, r"^wh", "w")
+  lstr = replace(lstr, r"[wy]([^aeiou])", s"\1")
+  
+  lstr = replace(lstr, "z", "s")
+
+  lstr = replace(lstr, r"^[gk]n", "n")
+  lstr = replace(lstr, r"^pm", "m")
+
+  #remove duplicates
+  lstr = squash(lstr)
+
+  #remove vowels apart from the first
+  lstr = replace(lstr, r"([^^])[aeiou]+", s"\1")
+  
+  #return first len letters (if that many)
+  return lstr[1:min(len,end)]
+end
+  
+
+export soundex, squash, metaphone
 
 end
