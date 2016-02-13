@@ -1,7 +1,7 @@
 module phonics
 
-" Looks up character against Soundex classes, returns integer code as Char, or
-  else ' ' if character was not found. "
+" Looks up character against input classes, returns integer code as Char, or
+  else the input if the character was not found. "
 function table_lookup(chr, table)
   for pos in 1:length(table)
     if chr in table[pos]
@@ -35,11 +35,43 @@ function squash(str)
   end
   return nstr
 end
- 
+
 " Lowercase and strip non-alpha chars from a word. "
 function prep(str)
   return replace(lowercase(str), r"[^a-z]", "")
 end
+
+" Returns the difference between two strings, in
+  reverse order to the input. "
+function reversed_non_matching(ionestr, itwostr)
+  unmatchedone = ""
+  unmatchedtwo = ""
+
+  l1 = length(ionestr)
+  l2 = length(itwostr)
+
+  #Comparison part, build strings of non-matches 
+  lrcmplen = min(l1, l2)
+  for i in 1:lrcmplen
+    if ionestr[i] != itwostr[i]
+      unmatchedone = string(ionestr[i]) * unmatchedone
+      unmatchedtwo = string(itwostr[i]) * unmatchedtwo
+    end
+  end
+
+  #Round off longer string with remaining characters
+  for i in lrcmplen+1:max(l1,l2)
+    if i <= l1
+      unmatchedone = string(ionestr[i]) * unmatchedone
+    elseif i <= l2
+      unmatchedtwo = string(itwostr[i]) * unmatchedtwo
+    end
+  end
+  return [unmatchedone,unmatchedtwo]
+end
+ 
+
+
 
 
 """
@@ -211,7 +243,7 @@ function nysiis(str, len=6)
 
   #Find/replace rest of rules.
   #Oddly, these duplicate some work which is done in the prefix.
-  nysiis_find = ["ev", r"[eiou]", 'q', 'z', r"m|kn", 'k', "sch", "ph", r"([^aeiou])h(.+)|(.+)h([^aeiou])", r"([^aeiou])h$", r"([aeiou])w", r"[as]$", r"ay$"]
+  nysiis_find = ["ev", r"[eiou]", 'q', 'z', r"m|kn", 'k', "sch", "ph", r"([^aeiou])h(.+)|(.+)h([^aeiou])", r"([^aeiou])h$", r"([aeiou])w", r"[as]{1,2}$", r"ay$"]
   nysiis_repl = ["af", 'a', 'g', 's', 'n', 'c', "sss", "ff", s"\1\2", s"\1", s"\1a", "", "y"]
   body = replace_all(lstr[2:end], nysiis_find, nysiis_repl)
   
@@ -297,6 +329,116 @@ function double_metaphone(str)
   return cmbi
 end
 
-export soundex, metaphone, phonex, phonix, nysiis, double_metaphone
+
+"""
+  match_rating_encode(str)
+
+  Transform a string into the representation used for the Match Rating Approach.
+
+  This is the string encoding system used within the Western Airlines 'Match Rating'
+  algorithm. It is a small set of simple transforms, most of which appear in other
+  schemes.
+
+  - For a similarity measure between two strings, use match_rating(onestr, twostr).
+  - For an automatic binary response about the closeness of strings, call 
+"""
+function match_rating_encode(str)
+  lstr = prep(str)
+  
+  #replace non-leading vowels
+  lstr = join([lstr[1], replace(lstr[2:end], r"[aeiou]+", "")])
+
+  #remove duplicate consonants
+  lstr = squash(lstr)
+  
+  #return 6 chars, 1:3 and end-3:end (if there are 6 chars). 
+  if length(lstr) > 6
+   lstr = join([lstr[1:3],lstr[end-3:end]])
+  end
+  return lstr
+end
+
+
+"""
+  match_rating(onestr, twostr)
+
+  Return the similarity measure between two strings as an integer 0:6.
+
+  The higher output is better. Typically, it would be compared against a table
+  of minimum match ratings, based on the original length of the strings. This
+  is implemented in meets_match_rating(onestr, twostr).
+
+  - For the encoding used by the system, call match_rating_encode(str) 
+  - For an automatic binary response about the closeness of strings, call 
+    meets_match_rating(onestr, twostr)
+"""
+function match_rating(onestr, twostr)
+
+  #encode input
+  ionestr = match_rating_encode(onestr)
+  itwostr = match_rating_encode(twostr)
+
+  #Remove identical characters in encoded string
+  unmatchedone, unmatchedtwo = reversed_non_matching(ionestr, itwostr)
+
+  #Remove identical characters in leftovers
+  reunmatchedone, reunmatchedtwo = reversed_non_matching(unmatchedone, unmatchedtwo)
+
+  #Pick longest string
+  cmpstr = reunmatchedone 
+  if length(reunmatchedone) < length(reunmatchedtwo)
+    cmpstr = reunmatchedtwo
+  end
+  
+  #Return 6-remaining error count
+  return 6-length(cmpstr)
+end
+    
+
+"""
+  meets_match_rating(onstr, twostr)
+
+  Returns a Bool indicating whether two strings are sufficiently similar to be
+  matched, according the the Match Rating Approach. 
+
+  A match rating value from match_rating(onestr, twostr) is compared to a minimum 
+  rating threshold based on the combined length of the input strings.
+
+  - For the actual similarity measure, use match_rating(onestr, twostr).
+  - For the encoding used by the system, call match_rating_encode(str) 
+"""
+function meets_match_rating(onestr, twostr)
+
+  ionestr = match_rating_encode(onestr)
+  itwostr = match_rating_encode(twostr)
+
+  #If length difference is 3 or greater, no comparison.
+  if abs(length(ionestr) - length(itwostr)) > 2
+    return -1
+  end
+
+  rating(x) = if x <= 4
+      return 5
+    elseif x <= 7
+      return 4
+    elseif x <= 12
+      return 3
+    else
+      return 2
+  end
+  
+  #calculate minimum rating based on length
+  lensum = length(ionestr) + length(itwostr)
+  minrating = rating(lensum)
+  
+  #get similarity of strings
+  similarity = match_rating(onestr, twostr)
+  
+  #return comparison
+  return similarity >= minrating
+end
+
+
+export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, reversed_non_matching
 
 end
