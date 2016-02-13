@@ -12,10 +12,13 @@ function table_lookup(chr, table)
 end
 
 " Replace all the 'find' patterns with the corresponding 'replace' strings. "
-function replace_all(str, from, to)
+function replace_all(str, from, to, display=false)
   nstr = str
   for pos in 1:length(from)
     nstr = replace(nstr, from[pos], to[pos])
+    if display
+      println(nstr, " = ", from[pos], " :: ", to[pos])
+    end
   end
   return nstr
 end
@@ -220,6 +223,80 @@ function nysiis(str, len=6)
 end
 
 
-export soundex, metaphone, phonex, phonix, nysiis
+"""
+  double_metaphone(str)
+
+  Transforms a word into its Double-Metaphone reresentation.
+
+  One of the issues often noted with Metaphone (and indeed other phonetic
+  encoding schemes) is the dubious applicability to non-English names. The 
+  Double-Metaphone scheme tries to account for this, using a very large set
+  of hand-crafted rules to reflex a varied set of European and Asian 
+  pronunciations.
+
+  The technique is known as the 'Double' because it uses two alternative 
+  strings to represent a word. If the two representations turn out to be
+  equivalent, both are returned, and should used as alternate keys.
+
+  As such, this function returns either a UTF8String[rep1, rep2], or a single
+  UTF8String. 
+  
+  NB: This implementation is based on another implementation in a different 
+  language, and some of the logic is speculative. It has been tested,
+  but probably not enough. 
+"""
+function double_metaphone(str)
+
+  lstr = prep(str)
+
+  #Table of search patterns
+  s_find = [r"^ps|^x", r"^sugar", r"sh(o[le][mzk]|eim)", "sh", r"si[oa]", r"^sm", r"^s([nlw])", r"sz|sc[eiy]", r"sche([rn])", r"sch([aeiou])", r"^sch([^aeiouw])", r"sc"]
+  j_find = [r"^jose", "r^ja", r"j$", 'j', r"^[gkp]n",r"wr","mb"]
+  c_find = [r"([^aeiou]a)ch([^ie])",r"^cae",r"^chia",r"chae",r"^ch(arac|aris|or[^e]|ym|ia|em)",r"([ao]r)ch(.[std])|([aoue^])ch(.[ts])",r"^ch([nrlmbhfvw])",r"^mc", r"cz", "ccia",  r"(^a|u)cc([eih][^u])", r"cc([eih][^u])",r"c[ckgq]", r"ci([aeo])", r"c([iey])", r"([^^][^m])c","ch", "c"]
+  d_find = [r"dg[iey]", "dg",r"d[dt]?",]
+  g_find = [r"([^aeiou])gh", r"^ghi", "^gh", r"([bhd].{1,3})gh", r"([trlcg].u)gh", r"([^^])gh([^i])",r"^ogn", r"gn(e?y)", "gn", "gli",r"^g[eiy]([spblyn])",r"([drm][aou])ng(er|e?y)", r"([or])gy", r"g(e?[ry])","gier",r"g([iey])t", r"g([iey])", 'g']
+  h_find = [r"([^^aeiou])h([^aeiou])", r"([ia])ll([eao])$", "ph", "pb", 'q']
+  dbmeta_find = vcat(j_find, s_find, c_find, d_find , g_find, h_find, [r"([^m][^ae])ier",r"([yi])sl",  r"([oa]i)s", "tion", r"tia|tch", r"^th([oa])m", "th", "v", r"^w[aeiou]", r"([aeiou])w(sk[iy]|$)?", r"wi[ct]z", r"([ie][oa]u)x", "zh", r"z([oia])"])
+
+
+  #Table of replacements
+  s_repl = ["s", "sugar", s"s\1", "x", "s", "sm", s"s\1", "s", s"xe\1", s"sk\1", s"x\1", "sk"]
+  j_repl = ["hose", "ja", "j", "j","n","r","m"]
+  c_repl = [s"\1k\2","sae","kia","kae",s"k\1",s"\1k\2", s"kr", "mk","s","xa", s"\1ks\2", s"x\1", "k", s"s\1","s", s"\1x","x","k"]
+  d_repl = ["j","tk","t"]
+  g_repl = [s"\1k", "ji", "k", s"\1", s"\1f", s"\1k\2","okn", s"kn\1", "n", "kli", s"k\1", s"\1nj\2", s"\1jy", s"k\1","jier", s"k\1t", s"j\1", "k"]
+  h_repl = ["", s"\1l\2", "f","p","k"]
+  dbmeta_repl = vcat(j_repl, s_repl, c_repl, d_repl, g_repl, h_repl, [s"\1ie", s"\1l", s"\1", "xn", "x", s"t\1m", "ø", "f", "a", "", "ts", "", s"\1ks", "j", "ts\1"])
+  
+  #Table of alternative replacements
+  s_alt = ["s", "xugar", s"s\1", "x", "x", "xm", s"x\1", "s", s"ske\1", s"sk\1", s"s\1", "sk"]
+  j_alt = ["hose", "a", "", "h", "n","r","m"]
+  c_alt = [s"\1k\2", "sae", "kia", "xae", s"k\1", s"\1k\2", s"kr", "mk", "x", "xa", s"\1ks\2", s"x\1", "k", s"x\1","s", s"\1k", "x", "k"]
+  d_alt = ["j","tk","t"]
+  g_alt = [s"\1k", "ji", "k", s"\1", s"\1f", s"\1k\2","on", s"kn\1", "kn", "li", s"j\1", s"\1nj\2", s"\1jy", s"k\1", "jier", s"k\1t", s"k\1", "k"]
+  h_alt = ["", s"\1\2", "f","p","k"]
+  dbmeta_altr = vcat(j_alt, s_alt, c_alt, d_alt, g_alt, h_alt, [s"\1ie", s"\1l",  "s", "xn", "x", s"t\1m", "t","f", "f", "f", "fx", s"\1ks", "j", "s\1"])
+
+  #Apply replacements
+  astr = replace_all(lstr, dbmeta_find, dbmeta_altr)
+  lstr = replace_all(lstr, dbmeta_find, dbmeta_repl)
+                                   
+  #Handle leading and other vowels
+  lstr = replace(lstr, r"^[aeiouy]", "a")
+  astr = replace(astr, r"^[aeiouy]", "a")
+  lstr = replace(lstr, r"([^^])[aeiouyw]+", s"\1")
+  astr = replace(astr, r"([^^])[aeiouyw]+", s"\1")
+
+  #If the results are the same, return only one string.
+  cmbi = [lstr, astr]
+  cmbi = map(squash, cmbi)
+  if cmbi[1] == cmbi[2]
+    return cmbi[1]
+  end
+  #Else, return both options.
+  return cmbi
+end
+
+export soundex, metaphone, phonex, phonix, nysiis, double_metaphone
 
 end
