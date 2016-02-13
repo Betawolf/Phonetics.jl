@@ -114,9 +114,6 @@ function phonex(str)
 end
   
 
-function phonix(str)
-  phonix_table = ["aehiouwy", "bp", "cgjkq", "dt", "l", "mn", "r", "fv", "sxz"]
-end
 
 """
   metaphone(str, len=4)
@@ -151,7 +148,43 @@ function metaphone(str,len=4)
   return lstr[1:min(len,end)]
 end
   
+"""
+  
+  phonix(str)
 
-export soundex, metaphone, phonex
+  Transforms a string into its Phonix code.
+
+  T. N. Gadd's Phonix encoding scheme is based on the Soundex scheme, and is 
+  similar to the related Phonex scheme. The Phonix scheme uses a large set of
+  hand-crafted rules specific to English text and pronunciation. A performance
+  penalty might be expected as a result of this large ruleset. """
+
+function phonix(str)
+  
+  lstr = prep(str)
+
+  #Apply this giant list of rules.
+  phonix_find = [r"dg", r"c([oau])", r"c[yi]", r"ce", r"^cl([aeiou])", r"ck", r"[gj]c$", r"^ch?r([aeiou])", r"^wr", r"nc", r"ct", r"ph", r"aa", r"sch", r"btl", r"ght", r"augh", r"([aeiou])lj([aeiou])", r"lough", r"^q", r"^kn", r"^gn|gn$", r"(\w)gn([^aeiou])", r"ghn", r"gne$", r"ghne", r"gnes$", r"^ps", r"^pt", r"^cz", r"([aeiou]})wz(\w)", r"(\w)cz(\w)", r"lz", r"rz", r"(\w)z([aeiou])", r"zz", r"([aeiou])z(\w)", r"hrough", r"ough", r"([aeiou]})q([aeiou])", r"([aeiou])j([aeiou])", r"^yj([aeiou])", r"^gh", r"([aeiou])e$", r"^cy", r"nx", r"^pf", r"dt$", r"([td])l$", r"yth", r"^ts?j([aeiou])", r"^ts([aeiou])", r"tch", r"([aeiou])wsk", r"^[pm]n([aeiou])", r"([aeiou])stl", r"tnt$", r"eaux$", r"exci", r"x", r"ned$", r"jr", r"ee$", r"zs", r"([aeiou])h?r([^aeiou]|$)", r"re$", r"lle", r"([^aeiou])le(s?)$", r"e$", r"es$", r"([aeiou])ss", r"([aeiou])mb$", r"mpts", r"mps", r"mpt", r"^[aeiou]"]
+  phonix_repl = [s"g", s"k", s"si", s"se", s"kl", s"k", s"k", s"kr", s"r", s"nk", s"kt", s"f", s"ar", s"sh", s"tl", s"t", s"arf", s"ld", s"low", s"kw", s"n", s"n", s"n", s"n", s"n", s"ne", s"ns", s"s", s"t", s"c", s"z", s"ch", s"lsh", s"rsh", s"s", s"ts", s"ts", s"rew", s"of", s"kw", s"y", s"y", s"g", s"gh", s"s", s"nks", s"f", s"t", s"il", s"ith", s"ch", s"t", s"ch", s"vsike", s"n", s"sl", s"ent", s"oh", s"ecs", s"ecs", s"nd", s"dr", s"ea", s"s", s"ah", s"ar", s"le", s"ile\1", s"", s"s", s"as", s"m", s"mps", s"ms", s"mt", s"v"]
+  lstr = replace_all(lstr, phonix_find, phonix_repl)
+
+  #remove duplicates
+  lstr = squash(lstr)
+
+  #look up phonix encoding for 2:end
+  phonix_table = ["aehiouwy", "bp", "cgjkq", "dt", "l", "mn", "r", "fv", "sxz"]
+  body = map(x -> table_lookup(x, phonix_table), lstr[2:end])
+
+  #remove vowels
+  body = replace(body, r"0+", "")
+  
+  #Pad with 0's
+  body = body * "000"
+  
+  #Join first letter with trimmed body.
+  return join([string(lstr[1]), body[1:3]])
+end
+
+export soundex, metaphone, phonex, phonix
 
 end

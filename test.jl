@@ -52,3 +52,18 @@ assert(phonex("Gayle"), "g400")
 assert(phonex("Christina"), "c623")
 assert(phonex("Kristina"), "c623")
 
+#Test for correctnes of Phonix
+println("\nPhonix")
+assert(phonix("Peter"), "p300")
+assert(phonix("Pete"), "p300")
+assert(phonix("Pedro"), "p360")
+assert(phonix("Stephen"), "s375")
+assert(phonix("Steve"), "s370")
+assert(phonix("Smith"), "s530")
+assert(phonix("Smythe"), "s530")
+assert(phonix("Gail"), "g400")
+assert(phonix("Gayle"), "g400")
+assert(phonix("Christina"), "k683")
+assert(phonix("Kristina"), "k683")
+
+
