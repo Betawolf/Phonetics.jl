@@ -38,6 +38,7 @@ assert(metaphone("pressed"), "prst")
 assert(metaphone("Van Hoesen"), "fnhs")
 assert(metaphone("Vincenzo"), "fnsn")
 
+#Tests for correctness of Phonex
 println("\nPhonex")
 assert(phonex("Peter"), "b360")
 assert(phonex("Pete"), "b300")

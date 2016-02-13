@@ -12,20 +12,15 @@ function table_lookup(chr, table)
 end
 
 " Replace all the 'find' patterns with the corresponding 'replace' strings. "
-function replace_all(str, find, repl)
+function replace_all(str, from, to)
   nstr = str
-  for pos in 1:length(find)
-    nstr = replace(nstr, find[pos], repl[pos])
+  for pos in 1:length(from)
+    nstr = replace(nstr, from[pos], to[pos])
   end
   return nstr
 end
 
-  
-
-"""
-  squash(str)
-
- 'Squashes' a string by reducing any repeated characters to only one instance. """
+" 'Squashes' a string by reducing any repeated characters to only one instance. "
 function squash(str)
   nstr = ""
   lc = 0
@@ -138,44 +133,14 @@ end
   returned length if you wish for a longer representation. 
 """
 function metaphone(str,len=4)
+  
   lstr = prep(str)
   
-  lstr = replace(lstr, "^x", "s")
-  lstr = replace(lstr, "x", "ks")
-
-  lstr = replace(lstr, "mb", "m")
-
-  lstr = replace(lstr, "sch", "sk")
-
-  lstr = replace(lstr, r"t?ch|sh", 'x')
-
-  lstr = replace(lstr, r"cia|[st]i[ao]", "xa")
+  #substitution rules
+  metaphone_find = ["^x",  "x",  "mb",  "sch",  r"t?ch|sh",  r"cia|[st]i[ao]",  r"s?c([eiy])(.+)",  r"(.+)dg([eiy])",  "d", r"gh([^aeiou$])",  r"gn$",  r"gned$",  r"c|g|q",  r"ph|v",  "th",  r"^wh",  r"[wy]([^aeiou])",  "z",  r"^[gk]n",  r"^pm"]
+  metaphone_repl = ["s",  "ks",  "m",  "sk",  'x',  "xa",  s"s\1\2",  s"\1j\2",  't',  s"h\1",  "n",  "ned",  "k",  "f",  "ø",  "w",  s"\1", "s",  "n",  "m"]
+  lstr = replace_all(lstr, metaphone_find, metaphone_repl)
   
-  lstr = replace(lstr, r"s?c([eiy])(.+)", s"s\1\2")
-
-  lstr = replace(lstr, r"(.+)dg([eiy])", s"\1j\2")
-
-  lstr = replace(lstr, "d", 't')
-  
-  lstr = replace(lstr, r"gh([^aeiou$])", s"h\1")
-
-  lstr = replace(lstr, r"gn$", "n")
-  lstr = replace(lstr, r"gned$", "ned")
-
-  lstr = replace(lstr, r"c|g|q", "k")
-
-  lstr = replace(lstr, r"ph|v", "f")
-
-  lstr = replace(lstr, "th", "ø")
-  
-  lstr = replace(lstr, r"^wh", "w")
-  lstr = replace(lstr, r"[wy]([^aeiou])", s"\1")
-  
-  lstr = replace(lstr, "z", "s")
-
-  lstr = replace(lstr, r"^[gk]n", "n")
-  lstr = replace(lstr, r"^pm", "m")
-
   #remove duplicates
   lstr = squash(lstr)
 
