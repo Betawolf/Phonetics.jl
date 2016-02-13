@@ -114,7 +114,6 @@ function phonex(str)
 end
   
 
-
 """
   metaphone(str, len=4)
 
@@ -148,8 +147,8 @@ function metaphone(str,len=4)
   return lstr[1:min(len,end)]
 end
   
+
 """
-  
   phonix(str)
 
   Transforms a string into its Phonix code.
@@ -157,8 +156,8 @@ end
   T. N. Gadd's Phonix encoding scheme is based on the Soundex scheme, and is 
   similar to the related Phonex scheme. The Phonix scheme uses a large set of
   hand-crafted rules specific to English text and pronunciation. A performance
-  penalty might be expected as a result of this large ruleset. """
-
+  penalty might be expected as a result of this large ruleset. 
+"""
 function phonix(str)
   
   lstr = prep(str)
@@ -185,6 +184,42 @@ function phonix(str)
   return join([string(lstr[1]), body[1:3]])
 end
 
-export soundex, metaphone, phonex, phonix
+
+"""
+  nysiis(str, len=6)
+  
+  Transform a string according to the New York State Identification and 
+  Intelligence System (NYSIIS) encoding scheme. 
+
+  Taft's NYSIIS scheme is reputed to be fairly popular. It is designed for
+  English names, using a strict application of 1,2 and 3-letter substitutions.
+  While simple enough, it does not appear particularly robust to common 
+  variations (Peter/Pete = patar/pat; Christina/Kristina = chrast/crasta).
+"""
+function nysiis(str, len=6)
+
+  lstr = prep(str)
+  
+  #Find/replace some initial leading/closing patterns.
+  nysiis_pre_find = [r"^mac", r"^kn", r"^k", r"p[hf]", r"^sch", r"e[ie]$", r"[drn]t$|[rn]d$"]
+  nysiss_pre_repl = ["mcc", "n", "c", "ff", "sss", "y", "d"]
+  lstr = replace_all(lstr, nysiis_pre_find, nysiss_pre_repl)
+  
+
+  #Find/replace rest of rules.
+  #Oddly, these duplicate some work which is done in the prefix.
+  nysiis_find = ["ev", r"[eiou]", 'q', 'z', r"m|kn", 'k', "sch", "ph", r"([^aeiou])h(.+)|(.+)h([^aeiou])", r"([^aeiou])h$", r"([aeiou])w", r"[as]$", r"ay$"]
+  nysiis_repl = ["af", 'a', 'g', 's', 'n', 'c', "sss", "ff", s"\1\2", s"\1", s"\1a", "", "y"]
+  body = replace_all(lstr[2:end], nysiis_find, nysiis_repl)
+  
+  #remove duplicates
+  body = squash(body)
+
+  #Add first letter back on
+  return join([lstr[1], body[1:min(len-1,end)]])
+end
+
+
+export soundex, metaphone, phonex, phonix, nysiis
 
 end

@@ -5,6 +5,7 @@ This `Julia` library implements some widely-used phonetic coding schemes, includ
 + Soundex
 + Phonex
 + Phonix
++ The New York State Identification and Intelligence System (NYSIIS)
 + Metaphone
 
 ### Phonetics 

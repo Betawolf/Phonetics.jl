@@ -66,4 +66,23 @@ assert(phonix("Gayle"), "g400")
 assert(phonix("Christina"), "k683")
 assert(phonix("Kristina"), "k683")
 
+#Test for correctness of NYSIIS
+println("\nNYSIIS")
+assert(nysiis("Peter"), "patar")
+assert(nysiis("Pete"), "pat")
+assert(nysiis("Pedro"), "padr")
+assert(nysiis("Stephen"), "stafan")
+assert(nysiis("Steve"), "staf")
+assert(nysiis("Smith"), "snat")
+assert(nysiis("Smythe"), "snyt")
+assert(nysiis("Gail"), "gal")
+assert(nysiis("Gayle"), "gayl")
+assert(nysiis("Christina"), "chrast")
+assert(nysiis("Kristina"), "crasta")
+assert(nysiis("Lawson"), "lasan")
+assert(nysiis("Greene"), "gran")
+assert(nysiis("Lynch"), "lync")
+assert(nysiis("Wheeler"), "whalar")
+assert(nysiis("Mitchell"), "matcal")
+
 
