@@ -3,6 +3,7 @@
 This `Julia` library implements some widely-used phonetic coding schemes, including:
 
 + Soundex
++ Fuzzy Soundex
 + Phonex
 + Phonix
 + The New York State Identification and Intelligence System (NYSIIS)

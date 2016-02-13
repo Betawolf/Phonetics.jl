@@ -84,7 +84,7 @@ assert(nysiis("Greene"), "gran")
 assert(nysiis("Lynch"), "lync")
 assert(nysiis("Wheeler"), "whalar")
 assert(nysiis("Mitchell"), "matcal")
-assert(nysiis("Anderson"), "andar")
+assert(nysiis("Anderson"), "andars")
 assert(nysiis("Truman"), "tranan")
 assert(nysiis("Jellyfish"), "jalyf")
 
@@ -102,6 +102,7 @@ assert(double_metaphone("Gayle"), "kl")
 assert(double_metaphone("Christina"), "krstn")
 assert(double_metaphone("Kristina"), "krstn")
 
+#Test for correctness of MRA
 println("\nMatch Rating Approach")
 assert(match_rating_encode("Smith"), "smth")
 assert(match_rating_encode("Smythe"), "smyth")
@@ -118,3 +119,11 @@ assert(match_rating("Smith", "Smythe"), 5)
 assert(meets_match_rating("Smith", "Smythe"), true)
 assert(match_rating("Catherine", "Kathryn"), 4)
 assert(meets_match_rating("Catherine", "Kathryn"), true)
+
+#Test for correctness of Fuzzy Soundex
+println("\nFuzzy Soundex")
+assert(fuzzy_soundex("Kristen"),"k6935")
+assert(fuzzy_soundex("Krissy"),"k6900")
+assert(fuzzy_soundex("Christen"),"k6935")
+
+

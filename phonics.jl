@@ -105,6 +105,76 @@ function soundex(str)
 end
 
 
+
+"""
+  fuzzy_soundex(str)
+
+  Transforms a string into its Fuzzy Soundex code.
+
+  The Fuzzy Soundex was an attempt to improve the reliability of Soundex. Like
+  Phonex, it introduces some multi-character replacements as a prelude to a lookup
+  table. Unlike Soundex, Phonex or Phonix, Fuzzy Soundex has a 1-letter 4-number
+  key.
+"""
+function fuzzy_soundex(str)
+
+  lstr = prep(str)
+  
+  #replace digrams
+  fs_find = ["ca", r"c[ck]", "ce",r"ch$",r"ch?l",r"ch?r","ci","co",r"^[ct][sz]","cu","cy","dg","gh",r"^gn",r"^[hw]r", r"^hw", r"^kn|ng", "ma?c","nst",r"^nt",r"p[fh]",r"rd?t$","sch",r"ti[ao]","tch"]
+  fs_repl = ["ka", "kk", "se","kk", "kl","kr","si","ko","ss","ku","sy","gg","hh","nn","rr","ww","nn","mk","nss","tt","ff","rr","sss","sio","chh"]
+  lstr = replace_all(lstr, fs_find, fs_repl)
+
+  #crazy-ass fuzzy soundex table
+  fuzzy_soundex_table = ["aehiouwy", "bfpv", "", "dt", "l", "mn", "r", "gkjqx", "", "csz"]
+  body = map(x -> table_lookup(x, fuzzy_soundex_table), lstr[2:end])
+  
+  #remove duplicates
+  body = squash(body)
+
+  #Remove 0's 
+  body = join(split(body, '0')) 
+
+  #Pad with 0's
+  body = body * "000"
+ 
+  #Join first letter with trimmed body.
+  return join([string(lstr[1]), body[1:4]])
+end
+  
+
+
+"""
+  fuzzy_soundex_compare(onestr, twostr)
+
+  Produce a similarity estimate based on the fuzzy soundex matching of two 
+  strings.
+
+  This function encodes the input strings with fuzzy_soundex(str) and performs
+  a simple comparison of the output features to estimate the similarity of the
+  words phonetically. 
+"""
+function fuzzy_soundex_compare(onestr, twostr)
+  #encode strings
+  ionestr = fuzzy_soundex(onestr)
+  itwostr = fuzzy_soundex(twostr)
+
+  l1 = length(ionestr)
+  l2 = length(itwostr)
+
+  common = 0
+  for i in 1:min(l1,l2)
+    if ionestr[i] == itwostr[i]
+      common += 1
+    end
+  end
+  
+  ð = (2*common)/(l1+l2)
+  return ð
+end
+
+
+
 """
   phonex(str)
   
@@ -243,8 +313,8 @@ function nysiis(str, len=6)
 
   #Find/replace rest of rules.
   #Oddly, these duplicate some work which is done in the prefix.
-  nysiis_find = ["ev", r"[eiou]", 'q', 'z', r"m|kn", 'k', "sch", "ph", r"([^aeiou])h(.+)|(.+)h([^aeiou])", r"([^aeiou])h$", r"([aeiou])w", r"[as]{1,2}$", r"ay$"]
-  nysiis_repl = ["af", 'a', 'g', 's', 'n', 'c', "sss", "ff", s"\1\2", s"\1", s"\1a", "", "y"]
+  nysiis_find = ["ev", r"[eiou]", 'q', 'z', r"m|kn", 'k', "sch", "ph", r"([^aeiou])h(.+)|(.+)h([^aeiou])", r"([^aeiou])h$", r"([aeiou])w", r"s$", r"a$", r"as$",r"ay$"]
+  nysiis_repl = ["af", 'a', 'g', 's', 'n', 'c', "sss", "ff", s"\1\2", s"\1", s"\1a", "", "", "", "y"]
   body = replace_all(lstr[2:end], nysiis_find, nysiis_repl)
   
   #remove duplicates
@@ -439,6 +509,6 @@ function meets_match_rating(onestr, twostr)
 end
 
 
-export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, reversed_non_matching
+export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, fuzzy_soundex_compare
 
 end
