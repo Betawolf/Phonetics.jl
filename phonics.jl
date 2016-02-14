@@ -75,13 +75,14 @@ end
 
 
 """
-  soundex(str)
+  `soundex(str)`
 
   Transforms a string into its Soundex code.
 
   The Russell Soundex code is designed primarily for use with English names and has some
-  known drawbacks, including a sensitivity to the first letter of a name (Christina is c623
-  and similar Kristina is k623) and loss of some audible differences (Kant and Knuth, k530).
+  known drawbacks, including a sensitivity to the first letter of a name (Christina is `c623`
+  and similar Kristina is `k623`) and loss of some audible differences (Kant and Knuth, `k530`).
+  The resulting code is always 1-letter and 3-digits. 
  """
 function soundex(str)
   lstr = prep(str)
@@ -113,8 +114,7 @@ end
 
   The Fuzzy Soundex was an attempt to improve the reliability of Soundex. Like
   Phonex, it introduces some multi-character replacements as a prelude to a lookup
-  table. Unlike Soundex, Phonex or Phonix, Fuzzy Soundex has a 1-letter 4-number
-  key.
+  table. Unlike Soundex, Phonex or Phonix, Fuzzy Soundex has a 1-letter 4-digit key.
 """
 function fuzzy_soundex(str)
 
@@ -145,19 +145,20 @@ end
 
 
 """
-  fuzzy_soundex_compare(onestr, twostr)
+  `code_similarity(onestr, twostr, code=fuzzy_soundex)`
 
-  Produce a similarity estimate based on the fuzzy soundex matching of two 
-  strings.
+  Produce a similarity estimate based on string comparison of the result of
+  coding the two input strings.
+  
+  `code` can be any of: `soundex`, `phonex`, `phonix`, `[fuzzy_soundex]`, `nysiis`,
+  `metaphone`, `double_metaphone`, `match_rating_encode`
 
-  This function encodes the input strings with fuzzy_soundex(str) and performs
-  a simple comparison of the output features to estimate the similarity of the
-  words phonetically. 
+  This comparison function was originally used by the authors of Fuzzy Soundex.
 """
-function fuzzy_soundex_compare(onestr, twostr)
+function code_similarity(onestr, twostr, code=fuzzy_soundex)
   #encode strings
-  ionestr = fuzzy_soundex(onestr)
-  itwostr = fuzzy_soundex(twostr)
+  ionestr = code(onestr)
+  itwostr = code(twostr)
 
   l1 = length(ionestr)
   l2 = length(itwostr)
@@ -176,12 +177,12 @@ end
 
 
 """
-  phonex(str)
+  `phonex(str)`
   
   Transforms a string into its Phonex code.
 
   Lait & Randell's Phonex encoding scheme can be viewed as an improved version
-  of Soundex. Like Soundex, it produces a 1-letter 3-number code, but a range
+  of Soundex. Like Soundex, it produces a 1-letter 3-digit code, but a range
   of modifications make it more resiliant to encoding errors involving the first
   character of a word, as well as other issues caused by interactions between
   characters within the rest of the word. """
@@ -220,7 +221,7 @@ end
   
 
 """
-  metaphone(str, len=4)
+  `metaphone(str, len=4)`
 
   Transforms a word into its Metaphone reresentation.
 
@@ -231,7 +232,7 @@ end
   be unintuitive regarding pronunciation. 
 
   For comparison purposes, 4 characters are usually used, but you may vary the 
-  returned length if you wish for a longer representation. 
+  returned length `len` if you wish for a longer representation. 
 """
 function metaphone(str,len=4)
   
@@ -254,7 +255,7 @@ end
   
 
 """
-  phonix(str)
+  `phonix(str)`
 
   Transforms a string into its Phonix code.
 
@@ -291,7 +292,7 @@ end
 
 
 """
-  nysiis(str, len=6)
+  `nysiis(str, len=6)`
   
   Transform a string according to the New York State Identification and 
   Intelligence System (NYSIIS) encoding scheme. 
@@ -299,7 +300,7 @@ end
   Taft's NYSIIS scheme is reputed to be fairly popular. It is designed for
   English names, using a strict application of 1,2 and 3-letter substitutions.
   While simple enough, it does not appear particularly robust to common 
-  variations (Peter/Pete = patar/pat; Christina/Kristina = chrast/crasta).
+  variations (Peter/Pete = `patar`/`pat`; Christina/Kristina = `chrast`/`crasta`).
 """
 function nysiis(str, len=6)
 
@@ -313,7 +314,7 @@ function nysiis(str, len=6)
 
   #Find/replace rest of rules.
   #Oddly, these duplicate some work which is done in the prefix.
-  nysiis_find = ["ev", r"[eiou]", 'q', 'z', r"m|kn", 'k', "sch", "ph", r"([^aeiou])h(.+)|(.+)h([^aeiou])", r"([^aeiou])h$", r"([aeiou])w", r"s$", r"a$", r"as$",r"ay$"]
+  nysiis_find = ["ev", r"[eiou]", 'q', 'z', r"m|kn", 'k', "sch", "ph", r"([^aeiou])h(.)|(.)h([^aeiou])", r"([^aeiou])h$", r"([aeiou])w", r"s$", r"a$", r"as$",r"ay$"]
   nysiis_repl = ["af", 'a', 'g', 's', 'n', 'c', "sss", "ff", s"\1\2", s"\1", s"\1a", "", "", "", "y"]
   body = replace_all(lstr[2:end], nysiis_find, nysiis_repl)
   
@@ -326,7 +327,7 @@ end
 
 
 """
-  double_metaphone(str)
+  `double_metaphone(str)`
 
   Transforms a word into its Double-Metaphone reresentation.
 
@@ -340,8 +341,8 @@ end
   strings to represent a word. If the two representations turn out to be
   equivalent, both are returned, and should used as alternate keys.
 
-  As such, this function returns either a UTF8String[rep1, rep2], or a single
-  UTF8String. 
+  As such, this function returns either a `UTF8String[rep1, rep2]`, or a single
+  `UTF8String`. 
   
   NB: This implementation is based on another implementation in a different 
   language, and some of the logic is speculative. It has been tested,
@@ -401,7 +402,7 @@ end
 
 
 """
-  match_rating_encode(str)
+  `match_rating_encode(str)`
 
   Transform a string into the representation used for the Match Rating Approach.
 
@@ -409,8 +410,10 @@ end
   algorithm. It is a small set of simple transforms, most of which appear in other
   schemes.
 
-  - For a similarity measure between two strings, use match_rating(onestr, twostr).
+  - For the similarity measure between two strings, use `match_rating(onestr, twostr)`
+
   - For an automatic binary response about the closeness of strings, call 
+  `meets_match_rating(onestr, twostr)`
 """
 function match_rating_encode(str)
   lstr = prep(str)
@@ -430,23 +433,32 @@ end
 
 
 """
-  match_rating(onestr, twostr)
+  `match_rating(onestr, twostr)`
 
-  Return the similarity measure between two strings as an integer 0:6.
+  Return the similarity measure between two strings as an integer `0:6`.
 
   The higher output is better. Typically, it would be compared against a table
   of minimum match ratings, based on the original length of the strings. This
-  is implemented in meets_match_rating(onestr, twostr).
+  is implemented in `meets_match_rating(onestr, twostr)`.
 
-  - For the encoding used by the system, call match_rating_encode(str) 
+  If the length of the two strings differs by more than `2`, the result will be
+  `-1`.
+
+  - For the encoding used by the system, call `match_rating_encode(str)` 
+
   - For an automatic binary response about the closeness of strings, call 
-    meets_match_rating(onestr, twostr)
+    `meets_match_rating(onestr, twostr)`
 """
 function match_rating(onestr, twostr)
 
   #encode input
   ionestr = match_rating_encode(onestr)
   itwostr = match_rating_encode(twostr)
+
+  #If length difference is 3 or greater, no comparison.
+  if abs(length(ionestr) - length(itwostr)) > 2
+    return -1
+  end
 
   #Remove identical characters in encoded string
   unmatchedone, unmatchedtwo = reversed_non_matching(ionestr, itwostr)
@@ -466,26 +478,21 @@ end
     
 
 """
-  meets_match_rating(onstr, twostr)
+  `meets_match_rating(onstr, twostr)`
 
   Returns a Bool indicating whether two strings are sufficiently similar to be
   matched, according the the Match Rating Approach. 
 
-  A match rating value from match_rating(onestr, twostr) is compared to a minimum 
+  A match rating value from `match_rating(onestr, twostr)` is compared to a minimum 
   rating threshold based on the combined length of the input strings.
 
-  - For the actual similarity measure, use match_rating(onestr, twostr).
-  - For the encoding used by the system, call match_rating_encode(str) 
+  - For the actual similarity measure, use `match_rating(onestr, twostr)`.
+  - For the encoding used by the system, call `match_rating_encode(str)` 
 """
 function meets_match_rating(onestr, twostr)
 
   ionestr = match_rating_encode(onestr)
   itwostr = match_rating_encode(twostr)
-
-  #If length difference is 3 or greater, no comparison.
-  if abs(length(ionestr) - length(itwostr)) > 2
-    return -1
-  end
 
   rating(x) = if x <= 4
       return 5
@@ -509,6 +516,28 @@ function meets_match_rating(onestr, twostr)
 end
 
 
-export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, fuzzy_soundex_compare
+function caverphone(str)
+
+  lstr = prep(str)
+
+  #The hell is going on?
+  #These regexes don't work, but I can't see why.
+  
+  cp_find = [r"^([crt]|en)ough", r"^gn", r"mb$", "cq", r"c([iey])", "tch", r"[cqx]", "v", "dg", r"ti([ao])", "d", "ph", "b", "sh", "z", r"[eioua]", r"^3",  "3gh3", "gh", "g", r"s+", r"t+", r"p+", r"k+", r"f+", r"m+", r"n+", "w3", "wy", "why", "wh3",  "w",r"^h", "h", "r3", "ry", "r", "l3", "ly", "l", "j", "y3", "y"]
+  cp_repl = [ s"\g<1>u2f", "2n", "m2", "2q", s"s\1", "2ch", "k", "f", "2g", s"si\1", "t", "fh", "p", "s2", "s", "3", "a", "3kh3", "22", "k", "S", "T", "P", "K", "F", "M", "N", "W3","Wy","Why","Wh3", "2", "a", "2", "R3", "RY", "2", "L3", "LY", "2", "y","Y3","2"]
+
+  lstr = replace_all(lstr, cp_find, cp_repl, true)
+
+  lstr = lowercase(lstr)
+  
+  lstr = replace(lstr, r"[23]+", "")
+
+  lstr = lstr * "111111"
+
+  return lstr[1:6]
+end
+
+
+export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone, replace_all
 
 end

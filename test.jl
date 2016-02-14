@@ -8,8 +8,13 @@ function assert(v1, v2)
   println("$prefix: ", v1, ',', v2)
 end
 
-#Tests for correctness of Soundex
-#println("\nSoundex")
+#Tests for correctness of Caverphone
+println("\nCaverphone")
+assert(caverphone("Lee"), "l11111")
+assert(caverphone("Thompson"), "tmpsn1")
+
+##Tests for correctness of Soundex
+println("\nSoundex")
 assert(soundex("Euler"),"e460")
 assert(soundex("Ellery"),"e460")
 assert(soundex("Gauss"),"g200")
@@ -34,12 +39,13 @@ assert(metaphone("Saneed"), "snt")
 assert(metaphone("Aardvark"), "artf")
 assert(metaphone("persuade"), "prst")
 assert(metaphone("pressed"), "prst")
+
 #NB: reference seemed confused about these two examples. 
 assert(metaphone("Van Hoesen"), "fnhs")
 assert(metaphone("Vincenzo"), "fnsn")
 
 #Tests for correctness of Phonex
-#println("\nPhonex")
+println("\nPhonex")
 assert(phonex("Peter"), "b360")
 assert(phonex("Pete"), "b300")
 assert(phonex("Pedro"), "b360")
@@ -53,7 +59,7 @@ assert(phonex("Christina"), "c623")
 assert(phonex("Kristina"), "c623")
 
 #Test for correctnes of Phonix
-#println("\nPhonix")
+println("\nPhonix")
 assert(phonix("Peter"), "p300")
 assert(phonix("Pete"), "p300")
 assert(phonix("Pedro"), "p360")
@@ -125,5 +131,4 @@ println("\nFuzzy Soundex")
 assert(fuzzy_soundex("Kristen"),"k6935")
 assert(fuzzy_soundex("Krissy"),"k6900")
 assert(fuzzy_soundex("Christen"),"k6935")
-
 
