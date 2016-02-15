@@ -45,7 +45,7 @@ functionality for phonetic codes. Note that this is _not_ string comparison.
 using Phonetics
 
 #Fuzzy Soundex method of comparing codes
-code_similarity("Kristina", "Kristian")
+code_similarity("Kristina", "Christina")
 #1.0
 
 code_similarity("Kristina", "Kristian")
