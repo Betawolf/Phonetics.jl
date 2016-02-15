@@ -157,3 +157,16 @@ using Base.Test
 @test fuzzy_soundex("Krissy") == "k6900"
 @test fuzzy_soundex("Christen") == "k6935"
 
+#Test some examples of code_similarity
+@test code_similarity("Kristina", "Christina") == 1
+@test code_similarity("Kristina", "Kristian") == 0.6
+@test code_similarity("Kristian", "Kristina", phonix) == 1
+
+#Test some examples of code_match
+helpstrings = ["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"]
+@test code_match("Help", helpstrings) == ["Halp", "Heelp", "Half"]
+@test code_match("Help", helpstrings, phonex) == ["Halp", "Elf", "Heelp", "Half", "Abba"]
+@test code_match("Help", helpstrings, metaphone) == ["Halp", "Heelp"]
+@test code_match("Help", helpstrings, double_metaphone) == ["Halp", "Heelp"]
+@test code_match("Help", helpstrings, metaphone, 0.5) == ["Halp", "Hulk", "Heelp", "Half"]
+@test code_match("Help", helpstrings, phonex, 0.1) == helpstrings

@@ -151,7 +151,8 @@ end
   coding the two input strings.
   
   `code` can be any of: `soundex`, `phonex`, `phonix`, `[fuzzy_soundex]`, `nysiis`,
-  `metaphone`, `match_rating_encode`
+  `metaphone`, `match_rating_encode`. Results from using `double_metaphone` may be
+  misleading due to the double encoding of that system.
 
   This comparison function was originally used by the authors of Fuzzy Soundex.
 """
@@ -558,21 +559,64 @@ function caverphone(str)
 end
 
 
-function code_match(str, array, code=fuzzy_soundex)
+
+"""
+  `code_match(str, array, code=fuzzy_soundex, permissive=0.0)`
+
+  Returns those items in `array` which are phonetic matches to `str` according 
+  to the algorithm `code`. 
+
+  Matches are normally on exact codes. The `permissive` option allows you to set
+  a lower threshold for comparison for most `code` options, using `code_similarity()`.
+  The value should be in the range 0:1.  Permissive coding is not possible for
+  `double_metaphone`. 
+
+  `match_rating_encode` will be treated like other codes rather than how it is used
+  in the overall approach. Those wishing to match items according to that system can
+  call
+
+      filter(item -> meets_match_rating(str, item), array)
+
+  instead.
+"""
+function code_match{T<:Union{UTF8String,ASCIIString}}(str::AbstractString, array::Array{T,1}, code=fuzzy_soundex::Function, permissive=0.0::Float64)
+
+  #catch weird input
+  if permissive > 1
+    error("Can't be more permissive than similarity 1")
+  end
+
+  #If partial matching
+  if permissive > 0 && permissive < 1
+
+    #catch attempt at double_metaphone (makes code messy)
+    if code == double_metaphone
+      error("Cannot currently code match with double_metaphone")
+    end
+
+    #returns any better matches than the set level
+    return filter(array) do item
+      sim_val = code_similarity(item, str, code)
+      return sim_val > permissive
+    end
+  end
 
   #encode key
   encoded_key = code(str)
 
-  #encode array
-  encoded_arr = map(code, array)
+  #filter straight matches
+  return filter(array) do item
 
-  #filter matches
-  filter(encoded_arr) do item
-    if code == double_metaphone && typeof(item) == Array{UTF8String,1}
-      return (encoded_key in item)
+    encoded_val = code(item)
+
+    #handle double_metaphone
+    if code == double_metaphone && isa(encoded_val, Array{UTF8String,1})
+      return (encoded_key in encoded_val)
     else 
-      return item == encoded_key
+      return encoded_key == encoded_val
     end
+  end
+
 end
 
 export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone, code_match

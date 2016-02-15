@@ -70,3 +70,25 @@ meets_match_rating("Smith", "Bobby")
 #false
 ```
 
+Finally, there is a function `code_match`, which performs phonetic matching on an array 
+of strings (such as might be the `.keys()` to a `Dict`), so that sound-alike options are
+selected and returned.  
+
+```{julia}
+#some strings
+helpstrings = ["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"]
+
+code_match("Help", helpstrings)
+#["Halp", "Heelp", "Half"] <- matches under the default coding scheme, fuzzy_soundex.
+
+code_match("Help", helpstrings, double_metaphone)
+#["Halp", "Heelp"] <- More reasonable matches from the better algorithm.
+
+#You can also set a permissive value to get more matches within a system.
+code_match("Help", helpstrings, fuzzy_soundex, 0.5)
+#["Halp", "Elf", "Hulk", "Heelp", "Half"]
+
+code_match("Help", helpstrings, fuzzy_soundex, 0.1)
+#["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"] <- lower values are more permissive 
+```
+
