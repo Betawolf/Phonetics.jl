@@ -358,7 +358,7 @@ function double_metaphone(str)
   #Table of search patterns
   s_find = [r"^ps|^x", r"^sugar", r"sh(o[le][mzk]|eim)", "sh", r"si[oa]", r"^sm", r"^s([nlw])", r"sz|sc[eiy]", r"sche([rn])", r"sch([aeiou])", r"^sch([^aeiouw])", r"sc"]
   j_find = [r"^jose", r"^ja", r"j$", 'j', r"^[gkp]n",r"wr","mb"]
-  c_find = [r"([^aeiou]a)ch([^ie])",r"^cae",r"^chia",r"chae",r"^ch(arac|aris|or[^e]|ym|ia|em)",r"([ao]r)ch(.[std])|([aoue^])ch(.[ts])",r"^ch([nrlmbhfvw])",r"^mc", r"wi[ct]z", r"cz", "ccia",  r"(^a|u)cc([eih][^u])", r"cc([eih][^u])",r"c[ckgq]", r"ci([aeo])", r"c([iey])", "ch",r"([^^][^m])c", "c"]
+  c_find = [r"([^aeiou]a)ch([^ie])",r"^cae",r"^chia",r"chae",r"^ch(arac|aris|or[^e]|ym|ia|em)",r"([ao]r)ch(.[std])", r"([aoue]|^)ch([nrlmbhfvw])",r"^mc", r"wi[ct]z", r"cz", "ccia",  r"(^a|u)cc([eih][^u])", r"cc([eih][^u])",r"c[ckgq]", r"ci([aeo])", r"c([iey])", "ch",r"([^^][^m])c", "c"]
   d_find = [r"dg[iey]", "dg",r"d[dt]?", r"([^m][^ae])ier",r"([yi])sl"]
   g_find = [r"([^aeiou])gh", r"^ghi", r"^gh", r"([bhd].{1,3})gh", r"([trlcg].u)gh", r"([^^i])gh", "gh", r"^ogn", r"gn(e?y)", "gn", "gli",r"^g[eiy]([spblyn])",r"([drm][aou])ng(er|e?y)", r"([or])gy", r"g(e?[ry])","gier",r"g([iey])t", r"g([iey])", 'g']
   h_find = [r"([^^aeiou])h([^aeiou])", r"([ia])ll([eao])$", "ph", "pb", 'q']
@@ -368,7 +368,7 @@ function double_metaphone(str)
   #Table of replacements
   s_repl = [s"s", s"sugar", s"s\1", s"x", s"s", s"sm", s"s\1", s"s", s"xe\1", s"sk\1", s"x\1", s"sk"]
   j_repl = [s"hose", s"ja", s"j", s"j", s"n", s"r", s"m"]
-  c_repl = [s"\1k\2", s"sae", s"kia", s"kae",s"k\1",s"\1k\2", s"kr", s"mk", s"ts", s"s", s"xa", s"\1ks\2", s"x\1", s"k", s"s\1", s"s", s"x", s"\1x", s"k"]
+  c_repl = [s"\1k\2", s"sae", s"kia", s"kae",s"k\1",s"\1k\2", s"\1k\2", s"mk", s"ts", s"s", s"xa", s"\1ks\2", s"x\1", s"k", s"s\1", s"s", s"x", s"\1x", s"k"]
   d_repl = [s"j",s"tk",s"t", s"\1ie", s"\1l"]
   g_repl = [s"\1k", s"ji", s"k", s"\1", s"\1f", s"\1k", s"", s"okn", s"kn\1", s"n", s"kli", s"k\1", s"\1nj\2", s"\1jy", s"k\1",s"jier", s"k\1t", s"j\1", s"k"]
   h_repl = [s"\1\2", s"\1l\2", s"f",s"p",s"k"]
@@ -377,14 +377,14 @@ function double_metaphone(str)
   #Table of alternative replacements
   s_alt = [s"s", s"xugar", s"s\1", s"x", s"x", s"xm", s"x\1", s"s", s"ske\1", s"sk\1", s"s\1", s"sk"]
   j_alt = [s"hose", s"a", s"", s"h", s"n",s"r",s"m"]
-  c_alt = [s"\1k\2", s"sae", s"kia", s"xae", s"k\1", s"\1k\2", s"kr", s"mk", s"fx", s"x", s"xa", s"\1ks\2", s"x\1", s"k", s"x\1",s"s", s"x", s"\1k", s"k"]
+  c_alt = [s"\1k\2", s"sae", s"kia", s"xae", s"k\1", s"\1k\2", s"\1k\2", s"mk", s"fx", s"x", s"xa", s"\1ks\2", s"x\1", s"k", s"x\1",s"s", s"x", s"\1k", s"k"]
   d_alt = [s"j",s"tk",s"t", s"\1ier", s"\1l"]
   g_alt = [s"\1k", s"ji", s"k", s"\1", s"\1f", s"\1k", s"", s"on", s"kn\1", s"kn", s"li", s"j\1", s"\1nj\2", s"\1jy", s"k\1", s"jier", s"k\1t", s"k\1", s"k"]
   h_alt = [s"\1\2", s"\1\2", s"f",s"p",s"k"]
   dbmeta_altr = vcat(j_alt, s_alt, c_alt, d_alt, g_alt, h_alt, [s"s", s"xn", s"x", s"t\1m", s"t",s"f", s"f", s"a", s"f", s"\1ks", s"j", s"s\1"])
 
   #Apply replacements
-  astr = replace_all(lstr, dbmeta_find, dbmeta_altr,true)
+  astr = replace_all(lstr, dbmeta_find, dbmeta_altr)
   lstr = replace_all(lstr, dbmeta_find, dbmeta_repl)
 
   lstr = squash(lstr)
@@ -540,7 +540,7 @@ function caverphone(str)
   lstr = prep(str)
 
   #Apply the caverphone replacements
-  cp_find = [r"^([crt]|en)ough", r"^gn", r"mb$", "cq", r"c([iey])", "tch", r"[cqx]", "v", "dg", r"ti([ao])", "d", "ph", "b", "sh", "z", r"[eioua]", r"^3",  "3gh3", "gh", "g", r"([stkfmn])+", r"w(h?[3y])", "w",r"^h", "h", "r([3y])", "r", "l([3y])", "l", "j", "y3", "y"]
+  cp_find = [r"^([crt]|en)ough", r"^gn", r"mb$", "cq", r"c([iey])", "tch", r"[cqx]", "v", "dg", r"ti([ao])", "d", "ph", "b", "sh", "z", r"[eioua]", r"^3",  "3gh3", "gh", "g", r"([stkfmn])+", r"w(h?[3y])", "w",r"^h", "h", "r([3y])", "r", r"l([3y])", "l", "j", "y3", "y"]
   cp_repl = [ s"\g<1>u2f", s"2n", s"m2", s"2q", s"s\1", s"2ch", s"k", s"f", s"2g", s"si\1", s"t", s"fh", s"p", s"s2", s"s", s"3", s"a", s"3kh3", s"22", s"k", s"\1", s"W\1", s"2", s"a", s"2", s"R\1", s"2", s"L\1", s"2", s"y",s"Y3",s"2"]
   lstr = replace_all(lstr, cp_find, cp_repl)
 
@@ -560,4 +560,3 @@ end
 export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone
 
 end
->>>>>>> 387b71ed91b72cf0b9d0586c0ce432ec6324fdd3

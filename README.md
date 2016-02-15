@@ -1,5 +1,7 @@
 # Phonetics
 
+[![Build Status](https://travis-ci.org/Betawolf/Phonetics.jl.svg?branch=master)](https://travis-ci.org/Betawolf/Phonetics.jl)
+
 This `Julia` library implements some widely-used phonetic coding schemes, including:
 
 + Soundex
@@ -21,7 +23,7 @@ to spelling variation.
 For example:
 
 ```{julia}
-using phonics
+using Phonetics
 
 soundex("Smythe")
 #"s530"
@@ -36,4 +38,35 @@ soundex("Gayle")
 #"g400"
 ```
 
-[![Build Status](https://travis-ci.org/Betawolf/Phonetics.jl.svg?branch=master)](https://travis-ci.org/Betawolf/Phonetics.jl)
+As well as the encoding schemes themselves, this package includes some comparison
+functionality for phonetic codes. Note that this is _not_ string comparison.
+
+```{julia}
+using Phonetics
+
+#Fuzzy Soundex method of comparing codes
+code_similarity("Kristina", "Kristian")
+#1.0
+
+code_similarity("Kristina", "Kristian")
+#0.6
+
+#Can use different coding methods to make the comparison, with different results
+code_similarity("Kristian", "Kristina", phonix)
+#1.0
+
+#The match rating approach quantifies similarity as an integer.
+match_rating("Smith", "Smythe")
+#5
+
+match_rating("Smith", "Bobby")
+#2
+
+#This is compared automatically to a threshold value if a binary judgement is required.
+meets_match_rating("Smith", "Smythe")
+#true
+
+meets_match_rating("Smith", "Bobby")
+#false
+```
+
