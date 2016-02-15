@@ -1,4 +1,4 @@
-module phonics
+module Phonetics
 
 " Looks up character against input classes, returns integer code as Char, or
   else the input if the character was not found. "
@@ -556,7 +556,6 @@ function caverphone(str)
   #return first 6
   return lstr[1:6]
 end
-
 
 export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone
 

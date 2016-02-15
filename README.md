@@ -1,4 +1,4 @@
-## Phonics
+## Phonetics
 
 This `Julia` library implements some widely-used phonetic coding schemes, including:
 
@@ -12,8 +12,6 @@ This `Julia` library implements some widely-used phonetic coding schemes, includ
 + Metaphone
 + Double Metaphone
 
-
-### Phonetics 
 
 Phonetic coding schemes are used to transform strings, particularly names, into 
 representations which reflect how they might be pronounced or perceived to have
