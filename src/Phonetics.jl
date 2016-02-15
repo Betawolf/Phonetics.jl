@@ -557,6 +557,24 @@ function caverphone(str)
   return lstr[1:6]
 end
 
-export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone
+
+function code_match(str, array, code=fuzzy_soundex)
+
+  #encode key
+  encoded_key = code(str)
+
+  #encode array
+  encoded_arr = map(code, array)
+
+  #filter matches
+  filter(encoded_arr) do item
+    if code == double_metaphone && typeof(item) == Array{UTF8String,1}
+      return (encoded_key in item)
+    else 
+      return item == encoded_key
+    end
+end
+
+export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone, code_match
 
 end
