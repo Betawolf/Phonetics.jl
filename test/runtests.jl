@@ -170,3 +170,17 @@ helpstrings = ["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"]
 @test code_match("Help", helpstrings, double_metaphone) == ["Halp", "Heelp"]
 @test code_match("Help", helpstrings, metaphone, 0.5) == ["Halp", "Hulk", "Heelp", "Half"]
 @test code_match("Help", helpstrings, phonex, 0.1) == helpstrings
+
+#Test some examples of code_cluster
+strings = ["Sing", "Sink", "Song", "Sunk", "Sinking", "Singing", "Single"]
+ccs1 = code_cluster(strings) 
+@test ccs1[1] == ["Sing","Sink","Song","Sunk","Sinking","Singing"]
+@test ccs1[2] == ["Sinking","Singing"]
+@test ccs1[3] == ["Single"]
+@test length(ccs1) == 3
+ccs2 = code_cluster(strings, phonix, 1, 1) 
+@test ccs2[1] == ["Sing","Sink","Song","Sunk"] 
+@test ccs2[2] == ["Sinking","Singing"]
+@test ccs2[3] == ["Single"]
+@test length(ccs2) == 3
+

@@ -160,6 +160,12 @@ function code_similarity(onestr, twostr, code=fuzzy_soundex)
   #encode strings
   ionestr = code(onestr)
   itwostr = code(twostr)
+  
+  return code_similarity_internal(ionestr, itwostr, code)
+end
+
+" Internal code similarity function (not for raw strings). "
+function code_similarity_internal(ionestr, itwostr, code=fuzzy_soundex)
 
   l1 = length(ionestr)
   l2 = length(itwostr)
@@ -619,6 +625,68 @@ function code_match{T<:Union{UTF8String,ASCIIString}}(str::AbstractString, array
 
 end
 
-export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone, code_match
+
+"""
+  `code_cluster(array[, code=phonix, lower_threshold=0.7, higher_threshold=0.9, stochastic=true])`
+  
+  Uses a phonetic similarity measure to cluster an array of strings.
+
+  This function uses a canopy clustering method to group input strings based 
+  on their phonetic similarity, as judged by `code_similarity`. The phonetic 
+  coding method to be used can be specified, as can the upper and lower thresholds
+  for similarity and whether or not to use randomly sampled centroids for the clusters.
+
+  Notes:
+    + Setting `higher_threshold=1` and `lower_threshold=1` will result in only exact 
+    code matches, which may be particularly sensible for coding schemes with variable 
+    length codes.
+
+    + Setting `lower_threshold` to the same value as `higher_threshold` will result 
+    in cleanly separated clusters -- that is, no elements of the original array will appear 
+    in more than one cluster. This is not the default.
+
+    + Setting `stochastic=false` will cause centroid to be selected from left to right
+    rather than randomly, meaning that the output clusters will be deterministic. Behaviour
+    without this setting is to select a centroid randomly, which can result in some clusters
+    appearing or disappearing between runs on the same data where either threshold < 1. 
+"""
+function code_cluster{T<:Union{UTF8String,ASCIIString}}(array::Array{T, 1}, code=phonix::Function, lower_threshold=0.7, higher_threshold=0.9, stochastic=true)
+
+  #Sanity check
+  if lower_threshold > higher_threshold
+    error("Lower threshold cannot be greater than higher threshold.")
+  end
+
+  clusters = Vector[]
+
+  #local copy of input array to shrink
+  coderef = copy(array)
+
+  #encoded version of input array
+  inarray = map(code, array)
+
+  while length(inarray) > 0
+    
+    if stochastic
+      centroid = rand(inarray)
+    else
+      centroid = inarray[1]
+    end
+
+    #similarity of all items to selected centroid
+    similarities = map(x -> code_similarity_internal(x, centroid), inarray)
+    
+    #select words which are greater than the lower threshold to add to this cluster
+    incluster = filter(x -> similarities[find(y -> y == x, coderef)[1]] >= lower_threshold, coderef)
+    push!(clusters, incluster)
+    
+    #remove codes and words which are higher than the higher threshold from consideration
+    inarray = filter(x -> similarities[find(y -> y == x, inarray)[1]] < higher_threshold, inarray)
+    coderef = filter(x -> similarities[find(y -> y == x, coderef)[1]] < higher_threshold, coderef)
+  end
+  return clusters
+end
+
+export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone, code_match, code_cluster
 
 end

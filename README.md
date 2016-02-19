@@ -70,7 +70,7 @@ meets_match_rating("Smith", "Bobby")
 #false
 ```
 
-Finally, there is a function `code_match`, which performs phonetic matching on an array 
+There is a function `code_match`, which performs phonetic matching on an array 
 of strings (such as might be the `.keys()` to a `Dict`), so that sound-alike options are
 selected and returned.  
 
@@ -92,3 +92,24 @@ code_match("Help", helpstrings, fuzzy_soundex, 0.1)
 #["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"] <- lower values are more permissive 
 ```
 
+Finally, there is also a clustering function `code_cluster` which groups strings which are similar
+according to their phonetic codes. 
+
+```{julia}
+strings = ["Sing", "Sink", "Song", "Sunk", "Sinking", "Singing", "Single"]
+
+code_cluster(strings)
+#3-element Array{Array{T,1},1}:
+# ASCIIString["Sing","Sink","Song","Sunk","Sinking","Singing"]
+# ASCIIString["Sinking","Singing"]                            
+# ASCIIString["Single"]                                       
+# ^ - note that clusters can be fairly wide, and that by default items appear in multiple clusters
+# The number of clusters is organically suited to the diversity of the input set.
+
+#clusters can be made to use only exact matches by setting both thresholds to 1.
+code_cluster(strings, phonix, 1, 1)
+#3-element Array{Array{T,1},1}:
+# ASCIIString["Sing","Sink","Song","Sunk"]
+# ASCIIString["Sinking","Singing"]        
+# ASCIIString["Single"]
+```
