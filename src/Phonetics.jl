@@ -1,5 +1,12 @@
 module Phonetics
 
+typealias AnyString Union{ASCIIString, UTF8String}
+
+" Difference in character length, for adjusting return sizes."
+function utfdiff(str::AnyString)
+  return sizeof(str) - length(str)
+end
+
 " Looks up character against input classes, returns integer code as Char, or
   else the input if the character was not found. "
 function table_lookup(chr::Char, table::Array{ASCIIString, 1})
@@ -11,8 +18,19 @@ function table_lookup(chr::Char, table::Array{ASCIIString, 1})
   return chr
 end
 
+" Table lookup which builds an array, checking all the bins. "
+function table_lookup_plural(chr::Char, table::Array{ASCIIString, 1})
+  res = []
+  for pos in 1:length(table)
+    if chr in table[pos]  
+      res = vcat(rest, Char('0'+(pos-1)))
+    end
+  end
+  return res
+end
+
 " Replace all the 'find' patterns with the corresponding 'replace' strings. "
-function replace_all(str::Union{ASCIIString, UTF8String}, from::Array{Regex,1}, to::Array{Base.SubstitutionString{ASCIIString}, 1}, display=false::Bool)
+function replace_all(str::AnyString, from::Array{Regex,1}, to::Array{Base.SubstitutionString{ASCIIString}, 1}, display=false::Bool)
   nstr = str
   for pos in 1:length(from)
     nstr = replace(nstr, from[pos], to[pos])
@@ -24,7 +42,7 @@ function replace_all(str::Union{ASCIIString, UTF8String}, from::Array{Regex,1}, 
 end
 
 " 'Squashes' a string by reducing any repeated characters to only one instance. "
-function squash(str::Union{ASCIIString, UTF8String})
+function squash(str::AnyString)
   nstr = ""
   lc = 0
   for c in str
@@ -36,14 +54,14 @@ function squash(str::Union{ASCIIString, UTF8String})
   return nstr
 end
 
-" Lowercase and strip non-alpha chars from a word. "
-function prep(str::Union{ASCIIString, UTF8String})
-  return replace(lowercase(str), r"[^a-z]", "")
+" Lowercase and strip non-alpha chars from a word. Naturally asciifies it. "
+function prep(str::AnyString)
+  return ascii(replace(lowercase(str), r"[^a-z]", ""))
 end
 
 " Returns the difference between two strings, in
   reverse order to the input. "
-function reversed_non_matching{T<:Union{ASCIIString, UTF8String}}(ionestr::T, itwostr::T)
+function reversed_non_matching(ionestr::AnyString, itwostr::AnyString)
   unmatchedone = ""
   unmatchedtwo = ""
 
@@ -84,7 +102,7 @@ end
   and similar Kristina is `k623`) and loss of some audible differences (Kant and Knuth, `k530`).
   The resulting code is always 1-letter and 3-digits. 
  """
-function soundex(str)
+function soundex(str::AnyString)
   lstr = prep(str)
 
   #Squash repetitions.
@@ -116,7 +134,7 @@ end
   Phonex, it introduces some multi-character replacements as a prelude to a lookup
   table. Unlike Soundex, Phonex or Phonix, Fuzzy Soundex has a 1-letter 4-digit key.
 """
-function fuzzy_soundex(str)
+function fuzzy_soundex(str::AnyString)
 
   lstr = prep(str)
   
@@ -139,7 +157,7 @@ function fuzzy_soundex(str)
   body = body * "000"
  
   #Join first letter with trimmed body.
-  return join([string(lstr[1]), body[1:4]])
+  return join([string(lstr[1]), body[1:min(4,end)]])
 end
   
 
@@ -158,7 +176,7 @@ end
   but non-normalised comparison scheme exists for Soundex, see `editex`, and a specific
   comparison algorithm exists for `match_rating_encode`, see `match_rating`.
 """
-function code_similarity(onestr, twostr, code=fuzzy_soundex)
+function code_similarity(onestr::AnyString, twostr::AnyString, code=fuzzy_soundex)
   #encode strings
   ionestr = code(onestr)
   itwostr = code(twostr)
@@ -167,7 +185,7 @@ function code_similarity(onestr, twostr, code=fuzzy_soundex)
 end
 
 " Internal code similarity function (not for raw strings). "
-function code_similarity_internal(ionestr, itwostr, code=fuzzy_soundex)
+function code_similarity_internal(ionestr::ASCIIString , itwostr::ASCIIString, code=fuzzy_soundex)
 
   l1 = length(ionestr)
   l2 = length(itwostr)
@@ -195,7 +213,7 @@ end
   of modifications make it more resiliant to encoding errors involving the first
   character of a word, as well as other issues caused by interactions between
   characters within the rest of the word. """
-function phonex(str)
+function phonex(str::AnyString)
 
   lstr = prep(str)
   
@@ -243,7 +261,7 @@ end
   For comparison purposes, 4 characters are usually used, but you may vary the 
   returned length `len` if you wish for a longer representation. 
 """
-function metaphone(str,len=4)
+function metaphone(str::AnyString,len::Int=4)
   
   lstr = prep(str)
   
@@ -260,6 +278,9 @@ function metaphone(str,len=4)
 
   #fix theta
   lstr = replace(lstr, "0", "ø")
+
+  #account for utf8 if necessary
+  len += utfdiff(lstr)
   
   #return first len letters (if that many)
   return lstr[1:min(len,end)]
@@ -276,7 +297,7 @@ end
   hand-crafted rules specific to English text and pronunciation. A performance
   penalty might be expected as a result of this large ruleset. 
 """
-function phonix(str)
+function phonix(str::AnyString)
   
   lstr = prep(str)
 
@@ -314,7 +335,7 @@ end
   While simple enough, it does not appear particularly robust to common 
   variations (Peter/Pete = `patar`/`pat`; Christina/Kristina = `chrast`/`crasta`).
 """
-function nysiis(str, len=6)
+function nysiis(str::AnyString, len=6)
 
   lstr = prep(str)
   
@@ -360,7 +381,7 @@ end
   language, and some of the logic is speculative. It has been tested,
   but probably not enough. 
 """
-function double_metaphone(str)
+function double_metaphone(str::AnyString)
 
   lstr = prep(str)
 
@@ -432,7 +453,7 @@ end
   - For an automatic binary response about the closeness of strings, call 
   `meets_match_rating(onestr, twostr)`
 """
-function match_rating_encode(str)
+function match_rating_encode(str::AnyString)
   lstr = prep(str)
   
   #replace non-leading vowels
@@ -466,7 +487,7 @@ end
   - For an automatic binary response about the closeness of strings, call 
     `meets_match_rating(onestr, twostr)`
 """
-function match_rating(onestr, twostr)
+function match_rating(onestr::AnyString, twostr::AnyString)
 
   #encode input
   ionestr = match_rating_encode(onestr)
@@ -495,7 +516,7 @@ end
     
 
 """
-  `meets_match_rating(onstr, twostr)`
+  `meets_match_rating(onestr, twostr)`
 
   Returns a Bool indicating whether two strings are sufficiently similar to be
   matched, according the the Match Rating Approach. 
@@ -506,7 +527,7 @@ end
   - For the actual similarity measure, use `match_rating(onestr, twostr)`.
   - For the encoding used by the system, call `match_rating_encode(str)` 
 """
-function meets_match_rating(onestr, twostr)
+function meets_match_rating(onestr::AnyString, twostr::AnyString)
 
   ionestr = match_rating_encode(onestr)
   itwostr = match_rating_encode(twostr)
@@ -544,7 +565,7 @@ end
   with '1's in the case where the transformed string would otherwise have been 
   shorter. 
 """
-function caverphone(str)
+function caverphone(str::AnyString)
 
   lstr = prep(str)
 
@@ -587,7 +608,7 @@ end
 
   instead.
 """
-function code_match{T<:Union{UTF8String,ASCIIString}}(str::AbstractString, array::Array{T,1}, code=fuzzy_soundex::Function, permissive=0.0::Float64)
+function code_match{T<:AnyString}(str::AnyString, array::Array{T,1}, code=fuzzy_soundex::Function, permissive=0.0::Float64)
 
   #catch weird input
   if permissive > 1
@@ -651,7 +672,7 @@ end
     without this setting is to select a centroid randomly, which can result in some clusters
     appearing or disappearing between runs on the same data where either threshold < 1. 
 """
-function code_cluster{T<:Union{UTF8String,ASCIIString}}(array::Array{T, 1}, code=phonix::Function, lower_threshold=0.7, higher_threshold=0.9, stochastic=true)
+function code_cluster{T<:AnyString}(array::Array{T, 1}, code=phonix::Function, lower_threshold=0.7, higher_threshold=0.9, stochastic=true)
 
   #Sanity check
   if lower_threshold > higher_threshold
@@ -695,56 +716,76 @@ end
   Return the Editex distance between two strings.
 
   Editex is an approximate phonetic string comparison algorithm. It can be 
-  thought of as a kind of combination of Soundex and edit distance. 
+  thought of as a kind of combination of Soundex and edit distance, though
+  the table used differs from that of Soundex and the edit distance cost is
+  calculated differently.
 
-  The input string is reduced to a compressed version according to Soundex
-  preprocessing rules, and then an edit cost is calculated between the two
-  strings. The distance between any pair of aligned characters is:
-  
-  - `0` where the characters are the same.
-  - `1` where the characters are from the same phonetic group.
+  In brief, a dynamic programming solution is used to minimise the edit cost,
+  which is comprised at base of:
+
+  - `0` where two characters are the same.
+  - `1` where two characters are from the same phonetic group.
   - `2` otherwise.
+
+  Complexity will be `O(mn)` for lengths `m` and `n` of input strings.
 
   See also: `code_similarity`.
 """
-function editex(onestr, twostr)
+function editex(onestr::AnyString, twostr::AnyString)
   
   #Prepare soundexily
-  ionestr = squash(prep(onestr))
-  itwostr = squash(prep(twostr))
-
-  #TODO: Reference said 'Soundex-like', check this table is correct.
-  soundex_table = ["aehiouwy", "bfpv", "cgjkqsxz", "dt", "l", "mn", "r"]
-  codeonestr = map(x -> table_lookup(x, soundex_table), ionestr)
-  codetwostr = map(x -> table_lookup(x, soundex_table), itwostr)
+  ionestr = prep(onestr)
+  itwostr = prep(twostr)
 
   l1 = length(ionestr)
   l2 = length(itwostr)
 
-  #Pad shorter code with 0s (to account for additions). 
-  if l1 > l2
-    minl = l2
-    codetwostr = codetwostr * repeat("0", l1-l2)
-  else
-    minl = l1
-    codeonestr = codeonestr * repeat("0", l2-l1)
-  end
-
-  editcost = 0
-
-  #Add 0 if the same char, 1 if same group, 2 otherwise.
-  for i in 1:l1
-    if i <= minl && ionestr[i] == itwostr[i]
-      continue
-    elseif codeonestr[i] == codetwostr[i]
-      editcost += 1
-    else
-      editcost += 2
-    end
-  end
-  return editcost 
+  editcost = editex_internal(l1, l2, ionestr, itwostr)
+  return editcost
 end
 
+editex_table = ["aeiouwy", "bp", "ckq", "dt", "lr", "mn", "gj", "fpv", "sxz", "csz"]
+
+" r-hand-side of editex internals "
+function editex_r(charone, chartwo)
+  if charone == chartwo
+    return 0
+  elseif length(intersect(table_lookup(charone, editex_table), table_lookup(chartwo, editex_table))) > 0
+    return 1
+  else 
+    return 2
+  end
+end
+
+" d-hand side of editex internals. Mostly identical."
+function editex_d(charone, chartwo)
+  if charone == chartwo
+    return 0
+  elseif charone in "hw" || length(intersect(table_lookup(charone, editex_table), table_lookup(chartwo, editex_table))) > 0
+    return 1
+  else 
+    return 2
+  end
+end
+
+" Dynamic programming implementation. "
+function editex_internal(i, j, onestr, twostr)
+  #terminate at start of strings
+  if i == j && i == 1
+    return 0
+  #finished one string
+  elseif j == 1
+    return editex_internal(i - 1, 1, onestr, twostr) + editex_d(onestr[i-1], onestr[i])
+  #finished the other
+  elseif i == 1
+    return editex_internal(1,j-1, onestr, twostr) + editex_d(twostr[j-1], twostr[j])
+  else
+    return min(editex_internal(i-1, j, onestr, twostr) + editex_d(onestr[i-1], onestr[i]),
+               editex_internal(i, j-1, onestr, twostr) + editex_d(twostr[j-1], twostr[j]),
+               editex_internal(i-1, j-1, onestr, twostr) + editex_r(onestr[i], twostr[j]))
+  end
+end
+    
 
 export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone, code_match, code_cluster, editex
 

@@ -41,7 +41,7 @@ soundex("Gayle")
 As well as the encoding schemes themselves, this package includes some comparison
 functionality for phonetic codes. Note that this is _not_ edit-distance-style string comparison, 
 but a measure of the phonetic similarity of the two strings according to a particular
-coding system. 
+coding system (except for `editex`, which is both). 
 
 ```{julia}
 using Phonetics
@@ -75,7 +75,7 @@ editex("Hello", "Hullo")
 #1
 
 editex("Hellophant", "Hullo")
-#9
+#10
 ```
 
 There is a function `code_match`, which performs phonetic matching on an array 
