@@ -184,3 +184,8 @@ ccs2 = code_cluster(strings, phonix, 1, 1)
 @test ccs2[3] == ["Single"]
 @test length(ccs2) == 3
 
+#Test some examples for editex
+@text editex("Hello", "Hullo") == 1
+@test editex("Hellophant", "Hullo") == 9
+@test editex("ello", "Hola") == 5
+@test editex("lo", "Hola") == 2

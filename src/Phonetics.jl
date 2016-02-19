@@ -145,16 +145,18 @@ end
 
 
 """
-  `code_similarity(onestr, twostr, code=fuzzy_soundex)`
+  `code_similarity(onestr, twostr[, code=fuzzy_soundex])`
 
   Produce a similarity estimate based on string comparison of the result of
   coding the two input strings.
   
   `code` can be any of: `soundex`, `phonex`, `phonix`, `[fuzzy_soundex]`, `nysiis`,
-  `metaphone`, `match_rating_encode`. Results from using `double_metaphone` may be
+  `metaphone` or `match_rating_encode`. Results from using `double_metaphone` may be
   misleading due to the double encoding of that system.
 
-  This comparison function was originally used by the authors of Fuzzy Soundex.
+  This comparison function was originally used by the authors of Fuzzy Soundex. A similar
+  but non-normalised comparison scheme exists for Soundex, see `editex`, and a specific
+  comparison algorithm exists for `match_rating_encode`, see `match_rating`.
 """
 function code_similarity(onestr, twostr, code=fuzzy_soundex)
   #encode strings
@@ -228,7 +230,7 @@ end
   
 
 """
-  `metaphone(str, len=4)`
+  `metaphone(str[, len=4])`
 
   Transforms a word into its Metaphone reresentation.
 
@@ -302,7 +304,7 @@ end
 
 
 """
-  `nysiis(str, len=6)`
+  `nysiis(str[, len=6])`
   
   Transform a string according to the New York State Identification and 
   Intelligence System (NYSIIS) encoding scheme. 
@@ -567,7 +569,7 @@ end
 
 
 """
-  `code_match(str, array, code=fuzzy_soundex, permissive=0.0)`
+  `code_match(str, array[, code=fuzzy_soundex, permissive=0.0])`
 
   Returns those items in `array` which are phonetic matches to `str` according 
   to the algorithm `code`. 
@@ -636,16 +638,15 @@ end
   coding method to be used can be specified, as can the upper and lower thresholds
   for similarity and whether or not to use randomly sampled centroids for the clusters.
 
-  Notes:
-    + Setting `higher_threshold=1` and `lower_threshold=1` will result in only exact 
+  - Setting `higher_threshold=1` and `lower_threshold=1` will result in only exact 
     code matches, which may be particularly sensible for coding schemes with variable 
     length codes.
 
-    + Setting `lower_threshold` to the same value as `higher_threshold` will result 
-    in cleanly separated clusters -- that is, no elements of the original array will appear 
-    in more than one cluster. This is not the default.
+  - Setting `lower_threshold` to the same value as `higher_threshold` will result 
+    in cleanly separated clusters -- that is, each element of the original array 
+    will be assigned to one and only one cluster.
 
-    + Setting `stochastic=false` will cause centroid to be selected from left to right
+  - Setting `stochastic=false` will cause centroid to be selected from left to right
     rather than randomly, meaning that the output clusters will be deterministic. Behaviour
     without this setting is to select a centroid randomly, which can result in some clusters
     appearing or disappearing between runs on the same data where either threshold < 1. 
@@ -687,6 +688,64 @@ function code_cluster{T<:Union{UTF8String,ASCIIString}}(array::Array{T, 1}, code
   return clusters
 end
 
-export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone, code_match, code_cluster
+
+"""
+  `editex(onestr, twostr)`
+
+  Return the Editex distance between two strings.
+
+  Editex is an approximate phonetic string comparison algorithm. It can be 
+  thought of as a kind of combination of Soundex and edit distance. 
+
+  The input string is reduced to a compressed version according to Soundex
+  preprocessing rules, and then an edit cost is calculated between the two
+  strings. The distance between any pair of aligned characters is:
+  
+  - `0` where the characters are the same.
+  - `1` where the characters are from the same phonetic group.
+  - `2` otherwise.
+
+  See also: `code_similarity`.
+"""
+function editex(onestr, twostr)
+  
+  #Prepare soundexily
+  ionestr = squash(prep(onestr))
+  itwostr = squash(prep(twostr))
+
+  #TODO: Reference said 'Soundex-like', check this table is correct.
+  soundex_table = ["aehiouwy", "bfpv", "cgjkqsxz", "dt", "l", "mn", "r"]
+  codeonestr = map(x -> table_lookup(x, soundex_table), ionestr)
+  codetwostr = map(x -> table_lookup(x, soundex_table), itwostr)
+
+  l1 = length(ionestr)
+  l2 = length(itwostr)
+
+  #Pad shorter code with 0s (to account for additions). 
+  if l1 > l2
+    minl = l2
+    codetwostr = codetwostr * repeat("0", l1-l2)
+  else
+    minl = l1
+    codeonestr = codeonestr * repeat("0", l2-l1)
+  end
+
+  editcost = 0
+
+  #Add 0 if the same char, 1 if same group, 2 otherwise.
+  for i in 1:l1
+    if i <= minl && ionestr[i] == itwostr[i]
+      continue
+    elseif codeonestr[i] == codetwostr[i]
+      editcost += 1
+    else
+      editcost += 2
+    end
+  end
+  return editcost 
+end
+
+
+export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, match_rating, meets_match_rating, fuzzy_soundex, code_similarity, caverphone, code_match, code_cluster, editex
 
 end
