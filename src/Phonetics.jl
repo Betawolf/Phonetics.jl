@@ -2,7 +2,7 @@ module Phonetics
 
 " Looks up character against input classes, returns integer code as Char, or
   else the input if the character was not found. "
-function table_lookup(chr, table)
+function table_lookup(chr::Char, table::Array{ASCIIString, 1})
   for pos in 1:length(table)
     if chr in table[pos]
         return Char('0'+(pos-1))
@@ -12,7 +12,7 @@ function table_lookup(chr, table)
 end
 
 " Replace all the 'find' patterns with the corresponding 'replace' strings. "
-function replace_all(str, from, to, display=false)
+function replace_all(str::Union{ASCIIString, UTF8String}, from::Array{Regex,1}, to::Array{Base.SubstitutionString{ASCIIString}, 1}, display=false::Bool)
   nstr = str
   for pos in 1:length(from)
     nstr = replace(nstr, from[pos], to[pos])
@@ -24,7 +24,7 @@ function replace_all(str, from, to, display=false)
 end
 
 " 'Squashes' a string by reducing any repeated characters to only one instance. "
-function squash(str)
+function squash(str::Union{ASCIIString, UTF8String})
   nstr = ""
   lc = 0
   for c in str
@@ -37,13 +37,13 @@ function squash(str)
 end
 
 " Lowercase and strip non-alpha chars from a word. "
-function prep(str)
+function prep(str::Union{ASCIIString, UTF8String})
   return replace(lowercase(str), r"[^a-z]", "")
 end
 
 " Returns the difference between two strings, in
   reverse order to the input. "
-function reversed_non_matching(ionestr, itwostr)
+function reversed_non_matching{T<:Union{ASCIIString, UTF8String}}(ionestr::T, itwostr::T)
   unmatchedone = ""
   unmatchedtwo = ""
 
@@ -121,8 +121,8 @@ function fuzzy_soundex(str)
   lstr = prep(str)
   
   #replace digrams
-  fs_find = ["ca", r"c[ck]", "ce",r"ch$",r"ch?l",r"ch?r","ci","co",r"^[ct][sz]","cu","cy","dg","gh",r"^gn",r"^[hw]r", r"^hw", r"^kn|ng", "ma?c","nst",r"^nt",r"p[fh]",r"rd?t$","sch",r"ti[ao]","tch"]
-  fs_repl = [s"ka", s"kk", s"se","kk", s"kl","kr","si","ko","ss","ku","sy","gg","hh","nn","rr","ww","nn","mk","nss","tt","ff","rr","sss","sio","chh"]
+  fs_find = [r"ca", r"c[ck]", r"ce",r"ch$",r"ch?l",r"ch?r",r"ci",r"co",r"^[ct][sz]",r"cu",r"cy",r"dg",r"gh",r"^gn",r"^[hw]r", r"^hw", r"^kn|ng", r"ma?c",r"nst",r"^nt",r"p[fh]",r"rd?t$",r"sch",r"ti[ao]",r"tch"]
+  fs_repl = [s"ka", s"kk", s"se",s"kk", s"kl",s"kr",s"si",s"ko",s"ss",s"ku",s"sy",s"gg",s"hh",s"nn",s"rr",s"ww",s"nn",s"mk",s"nss",s"tt",s"ff",s"rr",s"sss",s"sio",s"chh"]
   lstr = replace_all(lstr, fs_find, fs_repl)
 
   #crazy-ass fuzzy soundex table
@@ -209,12 +209,12 @@ function phonex(str)
 
   #Find/replace leading patterns
   phonex_pre_find = [r"^kn", r"^ph", r"^wr", r"^h", r"^[eiouy]", r"^p", r"^v", r"^[kq]", r"^j", r"^z"]
-  phonex_pre_repl = [s"n", s"f", s"r", s"", s"a", s"b", s"f", s"c", s"g","s"]
+  phonex_pre_repl = [s"n", s"f", s"r", s"", s"a", s"b", s"f", s"c", s"g",s"s"]
   lstr = replace_all(lstr, phonex_pre_find, phonex_pre_repl)
   
   #Preparatory find/replace for main coding.
   phonex_main_find = [r"[dt]c",r"[lr]([^aeiou$])",r"([mn])g",r"a|e|h|i|o|u|w|y",r"a+"]
-  phonex_main_repl = ['c',s"\1", s"\1",'a',""]
+  phonex_main_repl = [s"c",s"\1", s"\1",s"a",s""]
   body = replace_all(lstr[2:end], phonex_main_find, phonex_main_repl)
 
   #look up phonex coding for 2:end
@@ -326,7 +326,7 @@ function nysiis(str, len=6)
 
   #Find/replace rest of rules.
   #Oddly, these duplicate some work which is done in the prefix.
-  nysiis_find = ["ev", r"[eiou]", 'q', 'z', r"m|kn", 'k', "sch", "ph", r"([^aeiou])h(.)|(.)h([^aeiou])", r"([^aeiou])h$", r"([aeiou])w", r"s$", r"a$", r"as$",r"ay$"]
+  nysiis_find = [r"ev", r"[eiou]", r"q", r"z", r"m|kn", r"k", r"sch", r"ph", r"([^aeiou])h(.)|(.)h([^aeiou])", r"([^aeiou])h$", r"([aeiou])w", r"s$", r"a$", r"as$",r"ay$"]
   nysiis_repl = [s"af", s"a", s"g", s"s", s"n", s"c", s"sss", s"ff", s"\1\2", s"\1", s"\1a", s"", s"", s"", s"y"]
   body = replace_all(lstr[2:end], nysiis_find, nysiis_repl)
   
@@ -365,13 +365,13 @@ function double_metaphone(str)
   lstr = prep(str)
 
   #Table of search patterns
-  s_find = [r"^ps|^x", r"^sugar", r"sh(o[le][mzk]|eim)", "sh", r"si[oa]", r"^sm", r"^s([nlw])", r"sz|sc[eiy]", r"sche([rn])", r"sch([aeiou])", r"^sch([^aeiouw])", r"sc"]
-  j_find = [r"^jose", r"^ja", r"j$", 'j', r"^[gkp]n",r"wr","mb"]
-  c_find = [r"([^aeiou]a)ch([^ie])",r"^cae",r"^chia",r"chae",r"^ch(arac|aris|or[^e]|ym|ia|em)",r"([ao]r)ch(.[std])", r"([aoue]|^)ch([nrlmbhfvw])",r"^mc", r"wi[ct]z", r"cz", "ccia",  r"(^a|u)cc([eih][^u])", r"cc([eih][^u])",r"c[ckgq]", r"ci([aeo])", r"c([iey])", "ch",r"([^^][^m])c", "c"]
-  d_find = [r"dg[iey]", "dg",r"d[dt]?", r"([^m][^ae])ier",r"([yi])sl"]
-  g_find = [r"([^aeiou])gh", r"^ghi", r"^gh", r"([bhd].{1,3})gh", r"([trlcg].u)gh", r"([^^i])gh", "gh", r"^ogn", r"gn(e?y)", "gn", "gli",r"^g[eiy]([spblyn])",r"([drm][aou])ng(er|e?y)", r"([or])gy", r"g(e?[ry])","gier",r"g([iey])t", r"g([iey])", 'g']
-  h_find = [r"([^^aeiou])h([^aeiou])", r"([ia])ll([eao])$", "ph", "pb", 'q']
-  dbmeta_find = vcat(j_find, s_find, c_find, d_find , g_find, h_find, [r"([oa]i)s", "tion", r"tia|tch", r"^th([oa])m", "th", "v", r"^w[aeiou]", r"^wh", r"([aeiou])w(sk[iy]|$)?",  r"([ie][oa]u)x", "zh", r"z([oia])"])
+  s_find = [r"^ps|^x", r"^sugar", r"sh(o[le][mzk]|eim)", r"sh", r"si[oa]", r"^sm", r"^s([nlw])", r"sz|sc[eiy]", r"sche([rn])", r"sch([aeiou])", r"^sch([^aeiouw])", r"sc"]
+  j_find = [r"^jose", r"^ja", r"j$", r"j", r"^[gkp]n",r"wr",r"mb"]
+  c_find = [r"([^aeiou]a)ch([^ie])",r"^cae",r"^chia",r"chae",r"^ch(arac|aris|or[^e]|ym|ia|em)",r"([ao]r)ch(.[std])", r"([aoue]|^)ch([nrlmbhfvw])",r"^mc", r"wi[ct]z", r"cz", r"ccia",  r"(^a|u)cc([eih][^u])", r"cc([eih][^u])",r"c[ckgq]", r"ci([aeo])", r"c([iey])", r"ch",r"([^^][^m])c", r"c"]
+  d_find = [r"dg[iey]", r"dg",r"d[dt]?", r"([^m][^ae])ier",r"([yi])sl"]
+  g_find = [r"([^aeiou])gh", r"^ghi", r"^gh", r"([bhd].{1,3})gh", r"([trlcg].u)gh", r"([^^i])gh", r"gh", r"^ogn", r"gn(e?y)", r"gn", r"gli",r"^g[eiy]([spblyn])",r"([drm][aou])ng(er|e?y)", r"([or])gy", r"g(e?[ry])",r"gier",r"g([iey])t", r"g([iey])", r"g"]
+  h_find = [r"([^^aeiou])h([^aeiou])", r"([ia])ll([eao])$", r"ph", r"pb", r"q"]
+  dbmeta_find = vcat(j_find, s_find, c_find, d_find , g_find, h_find, [r"([oa]i)s", r"tion", r"tia|tch", r"^th([oa])m", r"th", r"v", r"^w[aeiou]", r"^wh", r"([aeiou])w(sk[iy]|$)?",  r"([ie][oa]u)x", r"zh", r"z([oia])"])
 
 
   #Table of replacements
@@ -549,7 +549,7 @@ function caverphone(str)
   lstr = prep(str)
 
   #Apply the caverphone replacements
-  cp_find = [r"^([crt]|en)ough", r"^gn", r"mb$", "cq", r"c([iey])", "tch", r"[cqx]", "v", "dg", r"ti([ao])", "d", "ph", "b", "sh", "z", r"[eioua]", r"^3",  "3gh3", "gh", "g", r"([stkfmn])+", r"w(h?[3y])", "w",r"^h", "h", "r([3y])", "r", r"l([3y])", "l", "j", "y3", "y"]
+  cp_find = [r"^([crt]|en)ough", r"^gn", r"mb$", r"cq", r"c([iey])", r"tch", r"[cqx]", r"v", r"dg", r"ti([ao])", r"d", r"ph", r"b", r"sh", r"z", r"[eioua]", r"^3",  r"3gh3", r"gh", r"g", r"([stkfmn])+", r"w(h?[3y])", r"w",r"^h", r"h", r"r([3y])", r"r", r"l([3y])", r"l", r"j", r"y3", r"y"]
   cp_repl = [ s"\g<1>u2f", s"2n", s"m2", s"2q", s"s\1", s"2ch", s"k", s"f", s"2g", s"si\1", s"t", s"fh", s"p", s"s2", s"s", s"3", s"a", s"3kh3", s"22", s"k", s"\1", s"W\1", s"2", s"a", s"2", s"R\1", s"2", s"L\1", s"2", s"y",s"Y3",s"2"]
   lstr = replace_all(lstr, cp_find, cp_repl)
 

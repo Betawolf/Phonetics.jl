@@ -173,19 +173,19 @@ helpstrings = ["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"]
 
 #Test some examples of code_cluster
 strings = ["Sing", "Sink", "Song", "Sunk", "Sinking", "Singing", "Single"]
-ccs1 = code_cluster(strings) 
+ccs1 = code_cluster(strings, phonix, 0.7, 0.9, false) 
 @test ccs1[1] == ["Sing","Sink","Song","Sunk","Sinking","Singing"]
 @test ccs1[2] == ["Sinking","Singing"]
 @test ccs1[3] == ["Single"]
 @test length(ccs1) == 3
-ccs2 = code_cluster(strings, phonix, 1, 1) 
+ccs2 = code_cluster(strings, phonix, 1, 1, false) 
 @test ccs2[1] == ["Sing","Sink","Song","Sunk"] 
 @test ccs2[2] == ["Sinking","Singing"]
 @test ccs2[3] == ["Single"]
 @test length(ccs2) == 3
 
 #Test some examples for editex
-@text editex("Hello", "Hullo") == 1
+@test editex("Hello", "Hullo") == 1
 @test editex("Hellophant", "Hullo") == 9
 @test editex("ello", "Hola") == 5
 @test editex("lo", "Hola") == 2
