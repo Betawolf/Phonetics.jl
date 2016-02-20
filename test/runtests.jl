@@ -1,9 +1,6 @@
 using Phonetics
 using Base.Test
 
-# write your own tests here
-@test 1 == 1
-
 #Tests for correctness of Caverphone
 @test caverphone("Lee") ==  "l11111"
 @test caverphone("Thompson") ==  "tmpsn1"
