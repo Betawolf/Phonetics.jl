@@ -27,7 +27,7 @@ using Base.Test
 @test metaphone("Shubert") ==  "xbrt"
 @test metaphone("Bonner") ==  "bnr"
 @test metaphone("Baymore") ==  "bmr"
-@test metaphone("Smith") ==  "smø"
+@test metaphone("Smith") ==  "sm0"
 @test metaphone("Saneed") ==  "snt"
 @test metaphone("Aardvark") ==  "artf"
 @test metaphone("persuade") ==  "prst"
@@ -90,13 +90,13 @@ using Base.Test
 @test double_metaphone("Pedro") ==  "ptr"
 @test double_metaphone("Stephen") ==  "stfn"
 @test double_metaphone("Steve") ==  "stf"
-@test double_metaphone("Smith") ==  ["smø","xmt"]
-@test double_metaphone("Smythe") ==  ["smø","xmt"]
+@test double_metaphone("Smith") ==  ["sm0","xmt"]
+@test double_metaphone("Smythe") ==  ["sm0","xmt"]
 @test double_metaphone("Gail") ==  "kl"
 @test double_metaphone("Gayle") ==  "kl"
 @test double_metaphone("Christina") ==  "krstn"
 @test double_metaphone("Kristina") ==  "krstn"
-@test double_metaphone("Whithers") ==  ["aørs","atrs"]
+@test double_metaphone("Whithers") ==  ["a0rs","atrs"]
 @test double_metaphone("Wasserman") ==  ["asrmn","fsrmn"]
 @test double_metaphone("Vasserman") ==  "fsrmn"
 @test double_metaphone("Arnoff") ==  "arnf"

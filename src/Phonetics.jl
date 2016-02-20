@@ -276,12 +276,6 @@ function metaphone(str::AnyString,len::Int=4)
   #remove vowels apart from the first
   lstr = replace(lstr, r"([^^])[aeiou]+", s"\1")
 
-  #fix theta
-  lstr = replace(lstr, "0", "ø")
-
-  #account for utf8 if necessary
-  len += utfdiff(lstr)
-  
   #return first len letters (if that many)
   return lstr[1:min(len,end)]
 end
@@ -425,9 +419,6 @@ function double_metaphone(str::AnyString)
   astr = replace(astr, r"^[aeiouy]", "a")
   lstr = replace(lstr, r"([^^])[aeiouyw]+", s"\1")
   astr = replace(astr, r"([^^])[aeiouyw]+", s"\1")
-
-  #fix theta
-  lstr = replace(lstr, "0", "ø")
 
   #If the results are the same, return only one string.
   cmbi = [lstr, astr]
