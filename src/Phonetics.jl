@@ -36,15 +36,14 @@ end
 
 " 'Squashes' a string by reducing any repeated characters to only one instance. "
 function squash(str::ByteString)
-  nstr = ""
   lc = 0
-  for c in str
-    if c != lc
-      nstr = nstr * string(c)
-      lc = c
-    end
-  end
-  return nstr
+  return filter(str) do x
+          if x != lc
+           lc = x
+           return true
+          end
+          return false
+         end
 end
 
 " Lowercase and strip non-alpha chars from a word. Naturally asciifies it. "
