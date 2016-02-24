@@ -189,3 +189,14 @@ ccs2 = code_cluster(strings, phonix, 1, 1, false)
 @test editex("Singings", "Cingingz") == 2
 @test editex("Singings", "Singjings") == 1
 @test editex("Singings", "Singlings") == 2
+
+#Test examples of syllable counts
+@test syllable_count("syllable") == 3
+@test syllable_count("syllables") == 3
+@test syllable_count("Mary had a little lamb") == 7
+@test syllable_count("calibre") == 3
+@test syllable_count("sabre-toothed") == 4
+@test syllable_count("are") == 1
+@test syllable_count("area") == 2
+@test syllable_count("underlies") == 3
+

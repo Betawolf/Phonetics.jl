@@ -1,4 +1,51 @@
 
+"""
+  `syllable_count(string, vowels="aeiouy", exceptions=[r"[aeiou]les?\b",r"[^l]e\b"])`
+
+  Counts the syllables in a string.
+
+  The algorithm given simply counts contiguous sequences of vowels, adjusting
+  for regex-specified exceptions, which reduce the count by one. Where a string 
+  with multiple words is input, the result is the sum for each word. 
+
+  The default arguments for `vowels` and `exceptions` mean that the function 
+  gives good output for English text, though certain words like 'Maria' will trip 
+  it up. Replacing vowels and rules would allow for the algorithm to apply for other 
+  languages. 
+  
+  The function should always return at least one syllable per word.
+"""
+function syllable_count(word::Union{ByteString,SubString}, vowels::ByteString="aeiouy", exceptions::Array{Regex,1}=[r"[aeiou][lr]es?\b", r"[^lri]es?\b"])
+  
+  #Catch sentence input
+  if contains(word, " ")
+    words = split(word, [' ','-','\n','\t'])
+    return sum(map(w -> syllable_count(w, vowels, exceptions), words))  
+  end
+
+  #Count vowels.
+  word = lowercase(word)
+  lc = ' '
+  count = 0
+  for char in word
+    if char in vowels && ! (lc in vowels)
+      count += 1
+    end
+    lc = char
+  end     
+
+  #Remove silent endings
+  for ex in exceptions
+    if ismatch(ex,word) && count > 1
+      count -= 1
+    end
+  end
+
+  return count
+end
+
+
+
 function time_word(word, language)
     if length(word) == 0 
       return 0
@@ -54,4 +101,4 @@ function spoken_length(str::ByteString, language::ASCIIString="en-US")
   end
 end
 
-export spoken_length
+export spoken_length, syllable_count
