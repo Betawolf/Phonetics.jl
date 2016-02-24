@@ -184,5 +184,6 @@ ccs2 = code_cluster(strings, phonix, 1, 1, false)
 #Test some examples for editex
 @test editex("Hello", "Hullo") == 1
 @test editex("Hellophant", "Hullo") == 10
-@test editex("ello", "Hola") == 2
-@test editex("lo", "Hola") == 4
+@test editex("ello", "Hola") == 4
+@test editex("lo", "Hola") == 6
+@test editex("Singings", "Cingingz") == 2

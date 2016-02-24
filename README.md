@@ -79,7 +79,7 @@ editex("Hellophant", "Hullo")
 ```
 
 There is a function `code_match`, which performs phonetic matching on an array 
-of strings (such as might be the `.keys()` to a `Dict`), so that sound-alike options are
+of strings (such as might be the `collect(keys())` to a `Dict`), so that sound-alike options are
 selected and returned.  
 
 ```{julia}

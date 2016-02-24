@@ -13,13 +13,7 @@ end
 
 " Table lookup which builds an array, checking all the bins. "
 function table_lookup_plural(chr::Char, table::Array{ASCIIString, 1})
-  res = []
-  for pos in 1:length(table)
-    if chr in table[pos]  
-      res = vcat(rest, Char('0'+(pos-1)))
-    end
-  end
-  return res
+  return map(x -> '0'+x, filter(pos -> chr in table[pos], 1:length(table)))
 end
 
 " Replace all the 'find' patterns with the corresponding 'replace' strings. "
@@ -733,7 +727,7 @@ editex_table = ["aeiouwy", "bp", "ckq", "dt", "lr", "mn", "gj", "fpv", "sxz", "c
 function editex_r(charone, chartwo)
   if charone == chartwo
     return 0
-  elseif length(intersect(table_lookup(charone, editex_table), table_lookup(chartwo, editex_table))) > 0
+  elseif length(intersect(table_lookup_plural(charone, editex_table), table_lookup_plural(chartwo, editex_table))) > 0
     return 1
   else 
     return 2
@@ -744,7 +738,7 @@ end
 function editex_d(charone, chartwo)
   if charone == chartwo
     return 0
-  elseif charone in "hw" || length(intersect(table_lookup(charone, editex_table), table_lookup(chartwo, editex_table))) > 0
+  elseif charone in "hw" || length(intersect(table_lookup_plural(charone, editex_table), table_lookup_plural(chartwo, editex_table))) > 0
     return 1
   else 
     return 2
@@ -755,17 +749,17 @@ end
 function editex_internal(i, j, onestr, twostr)
   #terminate at start of strings
   if i == j && i == 1
-    return 0
+    return editex_r(onestr[i], twostr[j])
   #finished one string
   elseif j == 1
     return editex_internal(i - 1, 1, onestr, twostr) + editex_d(onestr[i-1], onestr[i])
   #finished the other
   elseif i == 1
-    return editex_internal(1,j-1, onestr, twostr) + editex_d(twostr[j-1], twostr[j])
+    return editex_internal(1, j - 1, onestr, twostr) + editex_d(twostr[j-1], twostr[j])
   else
-    return min(editex_internal(i-1, j, onestr, twostr) + editex_d(onestr[i-1], onestr[i]),
-               editex_internal(i, j-1, onestr, twostr) + editex_d(twostr[j-1], twostr[j]),
-               editex_internal(i-1, j-1, onestr, twostr) + editex_r(onestr[i], twostr[j]))
+    return min(editex_internal(i - 1, j, onestr, twostr) + editex_d(onestr[i-1], onestr[i]),
+               editex_internal(i, j - 1, onestr, twostr) + editex_d(twostr[j-1], twostr[j]),
+               editex_internal(i - 1, j - 1 , onestr, twostr) + editex_r(onestr[i], twostr[j]))
   end
 end
     
