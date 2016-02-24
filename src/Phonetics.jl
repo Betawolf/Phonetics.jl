@@ -749,13 +749,15 @@ end
 function editex_internal(i, j, onestr, twostr)
   #terminate at start of strings
   if i == j && i == 1
-    return editex_r(onestr[i], twostr[j])
-  #finished one string
+    # Cost of both deletions (other move) would always be >= cost of comparison. 
+    return editex_r(onestr[i], twostr[j]) 
+  #finished one string, eat other
   elseif j == 1
     return editex_internal(i - 1, 1, onestr, twostr) + editex_d(onestr[i-1], onestr[i])
   #finished the other
   elseif i == 1
     return editex_internal(1, j - 1, onestr, twostr) + editex_d(twostr[j-1], twostr[j])
+  # minimum of deleting from either string or cost of cross-comparison
   else
     return min(editex_internal(i - 1, j, onestr, twostr) + editex_d(onestr[i-1], onestr[i]),
                editex_internal(i, j - 1, onestr, twostr) + editex_d(twostr[j-1], twostr[j]),
