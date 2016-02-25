@@ -200,3 +200,15 @@ ccs2 = code_cluster(strings, phonix, 1, 1, false)
 @test syllable_count("area") == 2
 @test syllable_count("underlies") == 3
 
+#Test for correctness of Roger Root
+@test roger_root("Johnson") == "32020"
+@test roger_root("Williams") == "45300"
+@test roger_root("Smith") == "00310"
+@test roger_root("Jones") == "32000"
+@test roger_root("Brown") == "09420"
+@test roger_root("Davis") == "01800"
+@test roger_root("Jackson") == "37020"
+@test roger_root("Wilson") == "45020"
+@test roger_root("Lee") == "05000"
+@test roger_root("Thomas") == "01300"
+

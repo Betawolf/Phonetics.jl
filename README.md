@@ -9,8 +9,11 @@ This `Julia` library implements some widely-used phonetic coding schemes, includ
 + Phonex
 + Phonix
 + The New York State Identification and Intelligence System (NYSIIS)
++ The Census Modified Statistics Canada procedure
 + The Match Rating Approach
++ Lein
 + Caverphone
++ Roger Root
 + Metaphone
 + Double Metaphone
 
@@ -100,7 +103,7 @@ code_match("Help", helpstrings, fuzzy_soundex, 0.1)
 #["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"] <- lower values are more permissive 
 ```
 
-Finally, there is also a clustering function `code_cluster` which groups strings which are similar
+There is also a clustering function `code_cluster` which groups strings which are similar
 according to their phonetic codes. 
 
 ```{julia}
@@ -120,4 +123,25 @@ code_cluster(strings, phonix, 1, 1)
 # ASCIIString["Sing","Sink","Song","Sunk"]
 # ASCIIString["Sinking","Singing"]        
 # ASCIIString["Single"]
+```
+
+Finally, there are some functions for measuring more general phonetic qualities of strings.
+
+```{julia}
+#count the number of syllables in a word
+syllable_count("Syllable")
+# 3
+
+#also works with sentences (and other languages, if rules are defined). 
+syllable_count("Mary had a little lamb")
+# 7
+
+#estimate how long it would take to say something
+spoken_length("Mary had a little lamb")
+#2.52064687529
+#in seconds
+
+#also in some other languages
+spoken_length("Mary hatte ein kleines lamm")
+#2.16602061901
 ```

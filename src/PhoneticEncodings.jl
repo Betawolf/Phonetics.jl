@@ -390,7 +390,7 @@ function match_rating_encode(str::ByteString)
   lstr = prep(str)
   
   #replace non-leading vowels
-  lstr = join([lstr[1], replace(lstr[2:end], r"[aeiou]+", "")])
+  lstr = string(lstr[1], replace(lstr[2:end], r"[aeiou]+", ""))
 
   #remove duplicate consonants
   lstr = squash(lstr)
@@ -402,4 +402,81 @@ function match_rating_encode(str::ByteString)
   return lstr
 end
 
-export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, fuzzy_soundex, caverphone
+
+"""
+  `lein(str)`
+
+  Transform a string into its Lein Technique representation.
+
+  I could not find much on the origins of this technique, but
+  from inspection of the algorithm it appears to be an early
+  competitor of Soundex. Like Soundex, it uses no bigram information,
+  and produces a 1-letter 3-number code. 
+"""
+function lein(str::ByteString)
+  lstr = prep(str)
+
+  #replace vowels and 'hwy'
+  lstr = join([lstr[1], replace(lstr[2:end], r"[aeiouhwy]+", "")])
+
+  #remove duplicates and truncate
+  lstr = squash(lstr)[1:min(4,end)]
+
+  #perform table lookup
+  lein_table = ["", "dt", "mn", "lr", "bfpv", "cjkgqs", "xz"]
+  lstr = string(lstr[1], map(x -> table_lookup(x, lein_table), lstr[2:end]))
+
+  #pad with 0s 
+  lstr = lstr * ("0" ^ max(0, 4 - length(lstr)))
+
+  return lstr
+end
+
+
+"""
+  `roger_root(str)`
+
+  Transforms a string into its Roger Root representation.
+
+  A rather mysterious encoding scheme, somewhat more exotic than the 
+  similarly-sourced `lein` algorithm. The Roger Root maps a combination
+  of bigrams and single characters to one or two digit codes, resulting
+  in a 5-digit code for each word. 
+"""
+function roger_root(str::ByteString)
+
+  lstr = prep(str)
+
+  rr_find = [r"^[aiou]", r"^[bp]", r"^(c[eiy]|t?s|z)", r"^t?[sc]{1,2}h", r"^([ckqx]|d?g)", r"^[dt]", r"^([gp]?f|ph|v)", r"^g?m", r"^[kgp]?n", r"^h", r"^j", r"^l", r"^w?r", r"^w", r"^y", r"[bp]+", r"(c[iey]|t?s|z)+", r"(t?[sc]{1,2}h|j)+", r"([ckqx]|d?g)+", r"([dt])+", r"([fv]|ph)+", r"l+", r"m+", r"n+", r"r+"]
+  rr_repl = [s"1", s"09", s"00", s"06", s"07", s"01", s"08", s"03", s"02", s"2", s"3", s"05", s"04", s"4", s"5", s"9", s"0", s"6", s"7", s"1", s"8", s"5", s"3", s"2", s"4"]
+
+  lstr = replace_all(lstr, rr_find, rr_repl)
+
+  lstr = replace(lstr, r"[aeiouhwy]+", "")
+  
+  lstr = lstr * "00000"
+
+  return lstr[1:5]
+end 
+  
+
+"""
+  `canada(str)`
+
+  Transforms a string into its Census Modified Statistics Canada representation.
+
+  This is an extremely simple code, merely removing vowels and squashing letters,
+  with no replacements or mapping to digits. 
+"""
+function canada(str::ByteString)
+  
+  lstr = prep(str)
+  
+  lstr = squash(lstr)
+
+  body = replace(lstr[2:end], r"[aeiouy]+", "")
+  
+  return string(lstr[1], body)  
+end
+
+export soundex, metaphone, phonex, phonix, nysiis, double_metaphone, match_rating_encode, fuzzy_soundex, caverphone, lein, roger_root, canada
