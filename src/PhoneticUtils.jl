@@ -92,7 +92,7 @@ function code_match{T<:String}(str::String, array::Array{T,1}, code=fuzzy_sounde
     encoded_val = code(item)
 
     #handle double_metaphone
-    if code == double_metaphone && isa(encoded_val, Array{UTF8String,1})
+    if code == double_metaphone && isa(encoded_val, Array{String,1})
       return (encoded_key in encoded_val)
     else 
       return encoded_key == encoded_val
