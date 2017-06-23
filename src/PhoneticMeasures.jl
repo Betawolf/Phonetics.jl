@@ -15,7 +15,7 @@
   
   The function should always return at least one syllable per word.
 """
-function syllable_count(word::Union{ByteString,SubString}, vowels::ByteString="aeiouy", exceptions::Array{Regex,1}=[r"[aeiou][lr]es?\b", r"[^lri]es?\b"])
+function syllable_count(word::Union{String,SubString}, vowels::String="aeiouy", exceptions::Array{Regex,1}=[r"[aeiou][lr]es?\b", r"[^lri]es?\b"])
   
   #Catch sentence input
   if contains(word, " ")
@@ -76,7 +76,7 @@ end
   to each of them, based on data collected during experiments with speech synthesis
   software, with some modification for inter-word gaps. 
 """
-function spoken_length(str::ByteString, language::ASCIIString="en-US")
+function spoken_length(str::String, language::String="en-US")
 
   languages = ["en-us", "de", "fr", "it", "es", "ja"]
   if ! (lowercase(language) in languages)

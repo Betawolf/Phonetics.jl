@@ -1,7 +1,7 @@
 
 " Looks up character against input classes, returns integer code as Char, or
   else the input if the character was not found. "
-function table_lookup(chr::Char, table::Array{ASCIIString, 1})
+function table_lookup(chr::Char, table::Array{String, 1})
   for pos in 1:length(table)
     if chr in table[pos]
         return Char('0'+(pos-1))
@@ -11,7 +11,7 @@ function table_lookup(chr::Char, table::Array{ASCIIString, 1})
 end
 
 " Replace all the 'find' patterns with the corresponding 'replace' strings. "
-function replace_all(str::ByteString, from::Array{Regex,1}, to::Array{Base.SubstitutionString{ASCIIString}, 1}, display=false::Bool)
+function replace_all(str::String, from::Array{Regex,1}, to::Array{Base.SubstitutionString{String}, 1}, display=false::Bool)
   nstr = str
   for pos in 1:length(from)
     nstr = replace(nstr, from[pos], to[pos])
@@ -23,8 +23,8 @@ function replace_all(str::ByteString, from::Array{Regex,1}, to::Array{Base.Subst
 end
 
 " 'Squashes' a string by reducing any repeated characters to only one instance. "
-function squash(str::ByteString)
-  lc = 0
+function squash(str::String)
+  lc = '\0'
   return filter(str) do x
           if x != lc
            lc = x
@@ -35,7 +35,7 @@ function squash(str::ByteString)
 end
 
 " Lowercase and strip non-alpha chars from a word. Naturally asciifies it. "
-function prep(str::ByteString)
+function prep(str::String)
   return ascii(replace(lowercase(str), r"[^a-z]", ""))
 end
 
@@ -52,7 +52,7 @@ end
   and similar Kristina is `k623`) and loss of some audible differences (Kant and Knuth, `k530`).
   The resulting code is always 1-letter and 3-digits. 
  """
-function soundex(str::ByteString)
+function soundex(str::String)
   lstr = prep(str)
 
   #Squash repetitions.
@@ -84,7 +84,7 @@ end
   Phonex, it introduces some multi-character replacements as a prelude to a lookup
   table. Unlike Soundex, Phonex or Phonix, Fuzzy Soundex has a 1-letter 4-digit key.
 """
-function fuzzy_soundex(str::ByteString)
+function fuzzy_soundex(str::String)
 
   lstr = prep(str)
   
@@ -121,7 +121,7 @@ end
   of modifications make it more resiliant to encoding errors involving the first
   character of a word, as well as other issues caused by interactions between
   characters within the rest of the word. """
-function phonex(str::ByteString)
+function phonex(str::String)
 
   lstr = prep(str)
   
@@ -165,7 +165,7 @@ end
   hand-crafted rules specific to English text and pronunciation. A performance
   penalty might be expected as a result of this large ruleset. 
 """
-function phonix(str::ByteString)
+function phonix(str::String)
   
   lstr = prep(str)
 
@@ -203,7 +203,7 @@ end
   While simple enough, it does not appear particularly robust to common 
   variations (Peter/Pete = `patar`/`pat`; Christina/Kristina = `chrast`/`crasta`).
 """
-function nysiis(str::ByteString, len=6)
+function nysiis(str::String, len=6)
 
   lstr = prep(str)
   
@@ -238,7 +238,7 @@ end
   with '1's in the case where the transformed string would otherwise have been 
   shorter. 
 """
-function caverphone(str::ByteString)
+function caverphone(str::String)
 
   lstr = prep(str)
 
@@ -275,7 +275,7 @@ end
   For comparison purposes, 4 characters are usually used, but you may vary the 
   returned length `len` if you wish for a longer representation. 
 """
-function metaphone(str::ByteString,len::Int=4)
+function metaphone(str::String,len::Int=4)
   
   lstr = prep(str)
   
@@ -310,14 +310,14 @@ end
   strings to represent a word. If the two representations turn out to be
   equivalent, both are returned, and should used as alternate keys.
 
-  As such, this function returns either an `ASCIIString[rep1, rep2]`, or a single
-  `ASCIIString`. 
+  As such, this function returns either an `String[rep1, rep2]`, or a single
+  `String`. 
   
   NB: This implementation is based on another implementation in a different 
   language, and some of the logic is speculative. It has been tested,
   but probably not enough. 
 """
-function double_metaphone(str::ByteString)
+function double_metaphone(str::String)
 
   lstr = prep(str)
 
@@ -386,7 +386,7 @@ end
   - For an automatic binary response about the closeness of strings, call 
   `meets_match_rating(onestr, twostr)`
 """
-function match_rating_encode(str::ByteString)
+function match_rating_encode(str::String)
   lstr = prep(str)
   
   #replace non-leading vowels
@@ -413,7 +413,7 @@ end
   competitor of Soundex. Like Soundex, it uses no bigram information,
   and produces a 1-letter 3-number code. 
 """
-function lein(str::ByteString)
+function lein(str::String)
   lstr = prep(str)
 
   #replace vowels and 'hwy'
@@ -443,7 +443,7 @@ end
   of bigrams and single characters to one or two digit codes, resulting
   in a 5-digit code for each word. 
 """
-function roger_root(str::ByteString)
+function roger_root(str::String)
 
   lstr = prep(str)
 
@@ -468,7 +468,7 @@ end
   This is an extremely simple code, merely removing vowels and squashing letters,
   with no replacements or mapping to digits. 
 """
-function canada(str::ByteString)
+function canada(str::String)
   
   lstr = prep(str)
   

@@ -1,6 +1,6 @@
 " Returns the difference between two strings, in
   reverse order to the input. "
-function reversed_non_matching(ionestr::ByteString, itwostr::ByteString)
+function reversed_non_matching(ionestr::String, itwostr::String)
   unmatchedone = ""
   unmatchedtwo = ""
 
@@ -29,7 +29,7 @@ end
  
 
 " Table lookup which builds an array, checking all the bins. "
-function table_lookup_plural(chr::Char, table::Array{ASCIIString, 1})
+function table_lookup_plural(chr::Char, table::Array{String, 1})
   return map(x -> '0'+x, filter(pos -> chr in table[pos], 1:length(table)))
 end
 
@@ -52,7 +52,7 @@ end
   - For an automatic binary response about the closeness of strings, call 
     `meets_match_rating(onestr, twostr)`
 """
-function match_rating(onestr::ByteString, twostr::ByteString)
+function match_rating(onestr::String, twostr::String)
 
   #encode input
   ionestr = match_rating_encode(onestr)
@@ -92,7 +92,7 @@ end
   - For the actual similarity measure, use `match_rating(onestr, twostr)`.
   - For the encoding used by the system, call `match_rating_encode(str)` 
 """
-function meets_match_rating(onestr::ByteString, twostr::ByteString)
+function meets_match_rating(onestr::String, twostr::String)
 
   ionestr = match_rating_encode(onestr)
   itwostr = match_rating_encode(twostr)
@@ -141,7 +141,7 @@ end
 
   See also: `code_similarity`.
 """
-function editex(onestr::ByteString, twostr::ByteString)
+function editex(onestr::String, twostr::String)
   
   #Prepare soundexily
   ionestr = prep(onestr)

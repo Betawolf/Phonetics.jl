@@ -12,7 +12,7 @@
   but non-normalised comparison scheme exists for Soundex, see `editex`, and a specific
   comparison algorithm exists for `match_rating_encode`, see `match_rating`.
 """
-function code_similarity(onestr::ByteString, twostr::ByteString, code=fuzzy_soundex)
+function code_similarity(onestr::String, twostr::String, code=fuzzy_soundex)
   #encode strings
   ionestr = code(onestr)
   itwostr = code(twostr)
@@ -21,7 +21,7 @@ function code_similarity(onestr::ByteString, twostr::ByteString, code=fuzzy_soun
 end
 
 " Internal code similarity function (not for raw strings). "
-function code_similarity_internal(ionestr::ASCIIString , itwostr::ASCIIString, code=fuzzy_soundex)
+function code_similarity_internal(ionestr::String , itwostr::String, code=fuzzy_soundex)
 
   l1 = length(ionestr)
   l2 = length(itwostr)
@@ -61,7 +61,7 @@ end
 
   instead.
 """
-function code_match{T<:ByteString}(str::ByteString, array::Array{T,1}, code=fuzzy_soundex::Function, permissive=0.0::Float64)
+function code_match{T<:String}(str::String, array::Array{T,1}, code=fuzzy_soundex::Function, permissive=0.0::Float64)
 
   #catch weird input
   if permissive > 1 || permissive < 0
@@ -125,7 +125,7 @@ end
     without this setting is to select a centroid randomly, which can result in some clusters
     appearing or disappearing between runs on the same data where either threshold < 1. 
 """
-function code_cluster{T<:ByteString}(array::Array{T, 1}, code=phonix::Function, lower_threshold=0.7, higher_threshold=0.9, stochastic=true)
+function code_cluster{T<:String}(array::Array{T, 1}, code=phonix::Function, lower_threshold=0.7, higher_threshold=0.9, stochastic=true)
 
   #Sanity check
   if lower_threshold > higher_threshold
