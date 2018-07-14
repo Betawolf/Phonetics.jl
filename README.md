@@ -18,7 +18,7 @@ This `Julia` library implements some widely-used phonetic coding schemes, includ
 + Double Metaphone
 
 
-Phonetic coding schemes are used to transform strings, particularly names, into 
+Phonetic coding schemes are used to transform strings, particularly names, into
 representations which reflect how they might be pronounced or perceived to have
 been pronounced. In essence, they map words to codes which should be resilient
 to spelling variation.
@@ -42,9 +42,9 @@ soundex("Gayle")
 ```
 
 As well as the encoding schemes themselves, this package includes some comparison
-functionality for phonetic codes. Note that this is _not_ edit-distance-style string comparison, 
+functionality for phonetic codes. Note that this is _not_ edit-distance-style string comparison,
 but a measure of the phonetic similarity of the two strings according to a particular
-coding system (except for `editex`, which is both). 
+coding system (except for `editex`, which is both).
 
 ```{julia}
 using Phonetics
@@ -81,9 +81,9 @@ editex("Hellophant", "Hullo")
 #10
 ```
 
-There is a function `code_match`, which performs phonetic matching on an array 
+There is a function `code_match`, which performs phonetic matching on an array
 of strings (such as might be the `collect(keys())` to a `Dict`), so that sound-alike options are
-selected and returned.  
+selected and returned.
 
 ```{julia}
 #some strings
@@ -100,29 +100,29 @@ code_match("Help", helpstrings, fuzzy_soundex, 0.5)
 #["Halp", "Elf", "Hulk", "Heelp", "Half"]
 
 code_match("Help", helpstrings, fuzzy_soundex, 0.1)
-#["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"] <- lower values are more permissive 
+#["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"] <- lower values are more permissive
 ```
 
 There is also a clustering function `code_cluster` which groups strings which are similar
-according to their phonetic codes. 
+according to their phonetic codes.
 
 ```{julia}
 strings = ["Sing", "Sink", "Song", "Sunk", "Sinking", "Singing", "Single"]
 
 code_cluster(strings)
 #3-element Array{Array{T,1},1}:
-# ASCIIString["Sing","Sink","Song","Sunk","Sinking","Singing"]
-# ASCIIString["Sinking","Singing"]                            
-# ASCIIString["Single"]                                       
+# ["Sing","Sink","Song","Sunk","Sinking","Singing"]
+# ["Sinking","Singing"]
+# ["Single"]
 # ^ - note that clusters can be fairly wide, and that by default items appear in multiple clusters
 # The number of clusters is organically suited to the diversity of the input set.
 
 #clusters can be made to use only exact matches by setting both thresholds to 1.
 code_cluster(strings, phonix, 1, 1)
 #3-element Array{Array{T,1},1}:
-# ASCIIString["Sing","Sink","Song","Sunk"]
-# ASCIIString["Sinking","Singing"]        
-# ASCIIString["Single"]
+# ["Sing","Sink","Song","Sunk"]
+# ["Sinking","Singing"]
+# ["Single"]
 ```
 
 Finally, there are some functions for measuring more general phonetic qualities of strings.
@@ -132,7 +132,7 @@ Finally, there are some functions for measuring more general phonetic qualities 
 syllable_count("Syllable")
 # 3
 
-#also works with sentences (and other languages, if rules are defined). 
+#also works with sentences (and other languages, if rules are defined).
 syllable_count("Mary had a little lamb")
 # 7
 
@@ -142,6 +142,6 @@ spoken_length("Mary had a little lamb")
 #in seconds
 
 #also in some other languages
-spoken_length("Mary hatte ein kleines lamm")
-#2.16602061901
+spoken_length("Mary hatte ein kleines lamm", "de")
+#2.10911496886
 ```

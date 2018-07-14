@@ -1,5 +1,5 @@
 using Phonetics
-using Base.Test
+using Test
 
 #Tests for correctness of Caverphone
 @test caverphone("Lee") ==  "l11111"
@@ -30,7 +30,7 @@ using Base.Test
 @test metaphone("persuade") ==  "prst"
 @test metaphone("pressed") ==  "prst"
 
-#NB: reference seemed confused about these two examples. 
+#NB: reference seemed confused about these two examples.
 @test metaphone("Van Hoesen") ==  "fnhs"
 @test metaphone("Vincenzo") ==  "fnsn"
 
@@ -170,13 +170,13 @@ helpstrings = ["Halp", "Elf", "Hulk", "Heelp","Half", "Abba", "Any"]
 
 #Test some examples of code_cluster
 strings = ["Sing", "Sink", "Song", "Sunk", "Sinking", "Singing", "Single"]
-ccs1 = code_cluster(strings, phonix, 0.7, 0.9, false) 
+ccs1 = code_cluster(strings, phonix, 0.7, 0.9, false)
 @test ccs1[1] == ["Sing","Sink","Song","Sunk","Sinking","Singing"]
 @test ccs1[2] == ["Sinking","Singing"]
 @test ccs1[3] == ["Single"]
 @test length(ccs1) == 3
-ccs2 = code_cluster(strings, phonix, 1, 1, false) 
-@test ccs2[1] == ["Sing","Sink","Song","Sunk"] 
+ccs2 = code_cluster(strings, phonix, 1, 1, false)
+@test ccs2[1] == ["Sing","Sink","Song","Sunk"]
 @test ccs2[2] == ["Sinking","Singing"]
 @test ccs2[3] == ["Single"]
 @test length(ccs2) == 3
@@ -212,3 +212,5 @@ ccs2 = code_cluster(strings, phonix, 1, 1, false)
 @test roger_root("Lee") == "05000"
 @test roger_root("Thomas") == "01300"
 
+@test spoken_length("Mary had a little lamb") ≈ 2.52064687529
+@test spoken_length("Mary hatte ein kleines lamm", "de") ≈ 2.1091149688610002
