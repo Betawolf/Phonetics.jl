@@ -1,0 +1,6 @@
+name = "Phonetics"
+uuid = "c609a250-be21-4349-b3a8-4a6e216003df"
+version = "0.1.0"
+
+[compat]
+julia = "1"
